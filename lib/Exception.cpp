@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 #include "Exception.h"
 
 Exception::Exception(String message) {

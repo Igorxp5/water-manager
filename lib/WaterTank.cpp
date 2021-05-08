@@ -24,10 +24,13 @@ void WaterTank::fill(bool force) {
     if (this->waterSource == NULL) {
         throw CANNOT_FILL_WATER_TANK_WITHOUT_WATER_SOURCE;
     }
+    if (!force && this->maxVolume >= this->getVolume()) {
+        throw CANNOT_FILL_WATER_TANK_MAX_VOLUME;
+    }
     this->lastChangingTime = 0;
     this->startFillingTime = millis();
     this->lastLoopTime = this->startFillingTime;
-    this->waterSource->enable();
+    this->waterSource->enable(force);
 }
 
 void WaterTank::stopFilling() {
@@ -68,6 +71,8 @@ RuntimeError* WaterTank::loop() {
 
     this->lastLoopPressure = currentPressure;
     this->lastLoopTime = millis();
+
+    //TODO: Check if the water tanks are full
     
     return error;
 }

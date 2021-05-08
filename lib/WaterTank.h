@@ -12,9 +12,9 @@ const double CHANGING_TOLERANCE = 0.01;
 class WaterTank
 {
     public:
-        double minimumVolume;
-        double maxVolume;
-        WaterSource* waterSource;
+        double minimumVolume = 0;
+        double maxVolume = 0;
+        WaterSource* waterSource = NULL;
 
         WaterTank(VolumeReader* volumeReader, WaterSource* waterSource=NULL);
 

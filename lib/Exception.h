@@ -34,4 +34,17 @@ Exception* WATER_TANK_ALREADY_REGISTERED = new Exception(
 RuntimeError* WATER_TANK_STOPPED_TO_FILL = new RuntimeError("O reservatório não está mais enchendo");
 RuntimeError* WATER_TANK_IS_NOT_FILLING = new RuntimeError("O reservatório não está enchendo");
 
+Exception* WATER_SOURCE_NOT_FOUND = new Exception("Não foi encontrado um fonte d'água com nome provido");
+Exception* WATER_SOURCE_ALREADY_REGISTERED = new Exception(
+    "Uma fonte d'água com esse nome já foi registrado");
+
+RuntimeError* CANNOT_HANDLE_WATER_SOURCE_IN_AUTOMATIC = new RuntimeError(
+    "Não é permitido abrir/fechar uma fonte d'água no modo automático");
+
+RuntimeError* CANNOT_ENABLE_WATER_SOURCE_DUE_MINIMUM_VOLUME = new RuntimeError(
+    "Não é permitido abrir uma fonte d'água porque o reservatório associado está abaixo do nível mínimo");
+
+RuntimeError* CANNOT_FILL_WATER_TANK_MAX_VOLUME = new RuntimeError(
+    "Não é permitido encher o reservatório, nível máximo atingido");
+
 #endif
