@@ -145,8 +145,10 @@ void Manager::stopFillingWaterTank(String name) {
 }
 
 void Manager::loop() {
-    for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
-        this->errors[i] = this->waterTanks[i]->loop();
+    if (this->mode == AUTOMATIC) {
+        for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
+            this->errors[i] = this->waterTanks[i]->loop();
+        }
     }
 }
 

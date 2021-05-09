@@ -24,7 +24,7 @@ void WaterTank::fill(bool force) {
     if (this->waterSource == NULL) {
         throw CANNOT_FILL_WATER_TANK_WITHOUT_WATER_SOURCE;
     }
-    if (!force && this->maxVolume >= this->getVolume()) {
+    if (!force && this->getVolume() >= this->maxVolume) {
         throw CANNOT_FILL_WATER_TANK_MAX_VOLUME;
     }
     this->lastChangingTime = 0;
@@ -46,7 +46,7 @@ RuntimeError* WaterTank::loop() {
     unsigned long currentTime = millis();
 
     if (currentTime < this->lastLoopTime) {
-        //TODO: Long Overflow (millis has reseted)
+        //Long Overflow (millis has reseted)
         if (this->lastChangingTime == 0) {
             this->lastChangingTime = currentTime + (this->lastChangingTime - this->startFillingTime);
         }
@@ -68,11 +68,21 @@ RuntimeError* WaterTank::loop() {
             error = WATER_TANK_IS_NOT_FILLING;
         }
     }
-
     this->lastLoopPressure = currentPressure;
+
+    if (this->waterSource != NULL) {
+        if (this->getVolume() >= this->maxVolume) {
+            this->waterSource->disable();
+        } else if (this->getVolume() <= this->minimumVolume) {
+            try {
+                this->fill(false);
+            } catch(RuntimeError* fillError) {
+                //If the water tank source is empty, do not start filling this water tank
+            }
+        }
+    }
+
     this->lastLoopTime = millis();
 
-    //TODO: Check if the water tanks are full
-    
     return error;
 }
