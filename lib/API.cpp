@@ -3,6 +3,7 @@
 #include "WaterTank.h"
 #include "VolumeReader.h"
 #include "OperationMode.h"
+#include "IOInterface.h"
 
 const long ITEM_NOT_FOUND = -1;
 
@@ -11,27 +12,31 @@ API::API() {
 }
 
 void API::createWaterSource(String name, short pin) {
-    WaterSource* waterSource = new WaterSource(pin);
+    IOInterface* io = this->getOrCreateIO(pin, DIGITAL, READ_ONLY);
+    WaterSource* waterSource = new WaterSource(io);
     this->manager->registerWaterSource(name, waterSource);
 }
 
 void API::createWaterSource(String name, short pin, String waterTankName) {
+    IOInterface* io = this->getOrCreateIO(pin, DIGITAL, READ_ONLY);
     WaterTank* waterTank = this->manager->getWaterTank(waterTankName);
-    WaterSource* waterSource = new WaterSource(pin, waterTank);
+    WaterSource* waterSource = new WaterSource(io, waterTank);
     this->manager->registerWaterSource(name, waterSource);
 }
 
 void API::createWaterTank(String name, short volumeReaderPin, double volumeFactor, double pressureFactor) {
-    VolumeReader* volumeReader = new VolumeReader(volumeReaderPin, pressureFactor, volumeFactor); 
+    IOInterface* io = this->getOrCreateIO(volumeReaderPin, ANALOGIC, READ_ONLY);
+    VolumeReader* volumeReader = new VolumeReader(io, pressureFactor, volumeFactor); 
     WaterTank* waterTank = new WaterTank(volumeReader);
 
     this->manager->registerWaterTank(name, waterTank);
 }
 
 void API::createWaterTank(String name, short volumeReaderPin, double volumeFactor, double pressureFactor, String waterSourceName) {
+    IOInterface* io = this->getOrCreateIO(volumeReaderPin, ANALOGIC, READ_ONLY);
     WaterSource* waterSource = this->getWaterSource(waterSourceName);
 
-    VolumeReader* volumeReader = new VolumeReader(volumeReaderPin, pressureFactor, volumeFactor); 
+    VolumeReader* volumeReader = new VolumeReader(io, pressureFactor, volumeFactor); 
     WaterTank* waterTank = new WaterTank(volumeReader, waterSource);
 
     this->manager->registerWaterTank(name, waterTank);
@@ -108,4 +113,16 @@ void API::reset() {
 
 unsigned int API::getError(RuntimeError** list) {
     return this->manager->getErrors(list);
+}
+
+IOInterface* API::getOrCreateIO(unsigned pin, IOType type, IOMode mode=READ_ONLY) {
+    IOInterface* io = IOInterface::get(pin);
+    if (io == NULL) {
+        if (type == DIGITAL) {
+            io = new DigitalIO(pin, mode);
+        } else {
+            io = new AnalogicIO(pin, mode);
+        }
+    }
+    return io;
 }

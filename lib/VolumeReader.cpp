@@ -2,7 +2,7 @@
 
 #include "VolumeReader.h"
 
-VolumeReader::VolumeReader(unsigned int pin, double pressureFactor, double volumeFactor) : PressureReader(pin, pressureFactor) {
+VolumeReader::VolumeReader(IOInterface* io, double pressureFactor, double volumeFactor) : PressureReader(io, pressureFactor) {
     this->volumeFactor = volumeFactor;
 }
 

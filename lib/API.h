@@ -38,6 +38,8 @@ class API
 
         WaterSource* getWaterSource(String name);
         long getWaterSourceIndex(String name);
+
+        IOInterface* getOrCreateIO(unsigned pin, IOType type, IOMode mode=READ_ONLY);
 };
 
 #endif

@@ -3,24 +3,22 @@
 #include "WaterSource.h"
 #include "Exception.h"
 
-WaterSource::WaterSource(unsigned int pin) {
-    this->pin = pin;
-    pinMode(pin, OUTPUT);
+WaterSource::WaterSource(IOInterface* io) {
+    this->io = io;
 }
 
-WaterSource::WaterSource(unsigned int pin, WaterTank* waterTank) {
-    this->pin = pin;
+WaterSource::WaterSource(IOInterface* io, WaterTank* waterTank) {
+    this->io = io;
     this->waterTank = waterTank;
-    pinMode(pin, OUTPUT);
 }
 
 void WaterSource::enable(bool force=false) {
     if (!force && this->waterTank != NULL && this->waterTank->getVolume() <= this->waterTank->minimumVolume) {
         throw CANNOT_ENABLE_WATER_SOURCE_DUE_MINIMUM_VOLUME;
     }
-    digitalWrite(this->pin, HIGH);
+    this->io->write(HIGH);
 }
 
 void WaterSource::disable() {
-    digitalWrite(this->pin, LOW);
+    this->io->write(LOW);
 }

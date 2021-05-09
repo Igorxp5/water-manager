@@ -1,15 +1,17 @@
 #ifndef PRESSURE_READER_H
 #define PRESSURE_READER_H
 
+#include "IOInterface.h"
+
 class PressureReader
 {
     public:
-        PressureReader(unsigned int pin, double pressureFactor);
+        PressureReader(IOInterface* io, double pressureFactor);
 
         virtual double getValue();
 
     protected:
-        unsigned int pin;
+        IOInterface* io;
         double pressureFactor;
 };
 

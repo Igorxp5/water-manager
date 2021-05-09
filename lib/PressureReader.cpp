@@ -2,13 +2,11 @@
 
 #include "PressureReader.h"
 
-PressureReader::PressureReader(unsigned int pin, double pressureFactor) {
-    this->pin = pin;
+PressureReader::PressureReader(IOInterface* io, double pressureFactor) {
+    this->io = io;
     this->pressureFactor = pressureFactor;
-
-    pinMode(pin, INPUT);
 }
 
 double PressureReader::getValue() {
-	return analogRead(this->pin) * this->pressureFactor;
+	return this->io->read() * this->pressureFactor;
 }

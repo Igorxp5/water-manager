@@ -6,7 +6,7 @@
 class VolumeReader : public PressureReader
 {
     public:
-        VolumeReader(unsigned int pin, double pressureFactor, double volumeFactor);
+        VolumeReader(IOInterface* io, double pressureFactor, double volumeFactor);
 
         double getValue() override;
         double getPressureValue();
