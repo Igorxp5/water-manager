@@ -3,6 +3,6 @@
 
 enum OperationMode {
     AUTOMATIC, MANUAL
-}
+};
 
 #endif

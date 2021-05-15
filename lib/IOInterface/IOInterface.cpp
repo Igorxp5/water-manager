@@ -16,7 +16,7 @@ IOInterface::IOInterface(unsigned int pin, IOMode mode) {
 	if (ioIndex == ITEM_NOT_FOUND) {
 		IOInterface::ios[ioIndex] = this;
 	} else {
-		IOInterface:totalIos += 1;
+		IOInterface::totalIos += 1;
 		IOInterface::ios = (IOInterface**) realloc(IOInterface::ios, IOInterface::totalIos * sizeof(IOInterface*));
 		IOInterface::ioPins = (unsigned int*) realloc(IOInterface::ioPins, IOInterface::totalIos * sizeof(unsigned int));
 		IOInterface::ios[IOInterface::totalIos - 1] = this;
@@ -61,6 +61,7 @@ void DigitalIO::write(unsigned int w) {
 	return digitalWrite(this->pin, w);
 }
 
+#ifdef TEST
 unsigned int TestIO::read() {
 	return this->value;
 }
@@ -68,3 +69,4 @@ unsigned int TestIO::read() {
 void TestIO::write(unsigned int w) {
     this->value = w;
 }
+#endif

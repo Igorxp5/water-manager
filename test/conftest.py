@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import serial
 import pytest
@@ -11,7 +12,7 @@ PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..')
 READ_TIMEOUT = 5
 
 os.environ['PYTHONUNBUFFERED'] = '1'
-
+sys.path.append(PROJECT_ROOT)  # Add project to PYTHONPATH
 
 class ArduinoNotFound(RuntimeError):
     pass
@@ -54,5 +55,7 @@ def arduino():
     process = subprocess.Popen(['pio', 'run', '-t', 'upload', '-e', 'test'], cwd=PROJECT_ROOT)
     process.wait()
     
+    assert process.returncode == 0, 'Failed to upload test environment to Arduino'
+
     with ArduinoConnection() as arduino_connection:
         yield arduino_connection

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+message _TestRequest {
+    uint32 id = 1;
+    oneof message {
+        _TestCreateIO createIO = 2;
+        _TestSetIOValue setIOValue = 3;
+        _TestGetIOValue getIOValue = 4;
+    }
+}
+
+message _TestResponseValue {
+    oneof value {
+        bool boolValue = 2;
+        int32 intValue = 3;
+        double doubleValue = 4;
+        string stringVlaue = 5;
+    }
+}
+
+message _TestResponse {
+    uint64 id = 1;
+    _TestResponseValue message = 2;
+}
+
+message _TestCreateIO {
+    uint32 pin = 1;
+}
+
+message _TestSetIOValue {
+    uint32 pin = 1;
+    uint32 value = 2;
+}
+
+message _TestGetIOValue {
+    uint32 pin = 1;
+}

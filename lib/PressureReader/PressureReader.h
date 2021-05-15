@@ -6,13 +6,13 @@
 class PressureReader
 {
     public:
-        PressureReader(IOInterface* io, double pressureFactor);
+        PressureReader(IOInterface* io, float pressureFactor);
 
-        virtual double getValue();
+        virtual float getValue();
 
     protected:
         IOInterface* io;
-        double pressureFactor;
+        float pressureFactor;
 };
 
 #endif

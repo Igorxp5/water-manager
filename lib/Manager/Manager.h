@@ -5,7 +5,6 @@
 
 #include "Exception.h"
 #include "WaterTank.h"
-#include "WaterSource.h"
 #include "OperationMode.h"
 
 class Manager
@@ -14,12 +13,12 @@ class Manager
         Manager();
 
         OperationMode getMode();
-        RuntimeError** getErrors();
+        const RuntimeError** getErrors();
         WaterTank* getWaterTank(String name);
         WaterSource* getWaterSource(String name);
         unsigned int getWaterSourceNames(String* list);
         unsigned int getWaterTankNames(String* list);
-        unsigned int getErrors(RuntimeError** list);
+        unsigned int getErrors(const RuntimeError** list);
         void setOperationMode(OperationMode mode);
         void setWaterSourceState(String name, bool enabled);
         void registerWaterSource(String name, WaterSource* waterSource);
@@ -36,7 +35,7 @@ class Manager
         WaterSource** waterSources = NULL;
         String* waterSourceNames = NULL;
         OperationMode mode = MANUAL;
-        RuntimeError** errors = NULL;
+        const RuntimeError** errors = NULL;
         unsigned int totalWaterTanks = 0;
         unsigned int totalWaterSources = 0;
 

@@ -12,14 +12,14 @@ OperationMode Manager::getMode() {
     return this->mode;
 }
 
-RuntimeError** Manager::getErrors() {
+const RuntimeError** Manager::getErrors() {
     return this->errors;
 }
 
 WaterTank* Manager::getWaterTank(String name) {
     long waterTankIndex = this->getWaterTankIndex(name);
     if (waterTankIndex == ITEM_NOT_FOUND) {
-        throw WATER_TANK_NOT_FOUND;
+        //throw WATER_TANK_NOT_FOUND;
     }
     return this->waterTanks[waterTankIndex];
 }
@@ -27,7 +27,7 @@ WaterTank* Manager::getWaterTank(String name) {
 WaterSource* Manager::getWaterSource(String name) {
     long waterSourceIndex = this->getWaterSourceIndex(name);
     if (waterSourceIndex == ITEM_NOT_FOUND) {
-        throw WATER_SOURCE_NOT_FOUND;
+        //throw WATER_SOURCE_NOT_FOUND;
     }
     return this->waterSources[waterSourceIndex];
 }
@@ -48,8 +48,8 @@ unsigned int Manager::getWaterTankNames(String* list) {
     return this->totalWaterTanks;
 }
 
-unsigned int Manager::getErrors(RuntimeError** list) {
-    list = (RuntimeError**) realloc(list, this->totalWaterTanks * sizeof(RuntimeError*));
+unsigned int Manager::getErrors(const RuntimeError** list) {
+    list = (const RuntimeError**) realloc(list, this->totalWaterTanks * sizeof(const RuntimeError*));
     for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
         list[i] = this->errors[i];
     }
@@ -63,7 +63,7 @@ void Manager::setOperationMode(OperationMode mode) {
 void Manager::setWaterSourceState(String name, bool enabled) {
     WaterSource* waterSource = this->getWaterSource(name);
     if (this->mode == AUTOMATIC) {
-        throw CANNOT_HANDLE_WATER_SOURCE_IN_AUTOMATIC;
+        //throw CANNOT_HANDLE_WATER_SOURCE_IN_AUTOMATIC;
     }
     if (enabled) {
         waterSource->enable();
@@ -74,7 +74,7 @@ void Manager::setWaterSourceState(String name, bool enabled) {
 
 void Manager::registerWaterSource(String name, WaterSource* waterSource) {
     if (this->getWaterSourceIndex(name) != ITEM_NOT_FOUND) {
-        throw WATER_SOURCE_ALREADY_REGISTERED;
+        //throw WATER_SOURCE_ALREADY_REGISTERED;
     }
     this->totalWaterSources += 1;
 
@@ -88,7 +88,7 @@ void Manager::registerWaterSource(String name, WaterSource* waterSource) {
 void Manager::unregisterWaterSource(String name) {
     long waterSourceIndex = this->getWaterSourceIndex(name);
     if (waterSourceIndex == ITEM_NOT_FOUND) {
-        throw WATER_SOURCE_NOT_FOUND;
+        //throw WATER_SOURCE_NOT_FOUND;
     }
     for (unsigned int i = waterSourceIndex + 1; i < this->totalWaterSources; i++) {
         this->waterSources[i - 1] = this->waterSources[i];
@@ -103,11 +103,11 @@ void Manager::unregisterWaterSource(String name) {
 
 void Manager::registerWaterTank(String name, WaterTank* waterTank) {
     if (this->getWaterTankIndex(name) != ITEM_NOT_FOUND) {
-        throw WATER_TANK_ALREADY_REGISTERED;
+        //throw WATER_TANK_ALREADY_REGISTERED;
     }
     this->totalWaterTanks += 1;
 
-    this->errors = (RuntimeError**) realloc(this->errors, this->totalWaterTanks * sizeof(RuntimeError*));
+    this->errors = (const RuntimeError**) realloc(this->errors, this->totalWaterTanks * sizeof(const RuntimeError*));
     this->waterTanks = (WaterTank**) realloc(this->waterTanks, this->totalWaterTanks * sizeof(WaterTank*));
     this->waterTankNames = (String*) realloc(this->waterTankNames, this->totalWaterTanks * sizeof(String));
 
@@ -119,7 +119,7 @@ void Manager::registerWaterTank(String name, WaterTank* waterTank) {
 void Manager::unregisterWaterTank(String name) {
     long waterTankIndex = this->getWaterTankIndex(name);
     if (waterTankIndex == ITEM_NOT_FOUND) {
-        throw WATER_TANK_NOT_FOUND;
+        //throw WATER_TANK_NOT_FOUND;
     }
     for (unsigned int i = waterTankIndex + 1; i < this->totalWaterTanks; i++) {
         this->errors[i - 1] = this->errors[i];
@@ -129,7 +129,7 @@ void Manager::unregisterWaterTank(String name) {
 
     this->totalWaterTanks -= 1;
 
-    this->errors = (RuntimeError**) realloc(this->errors, this->totalWaterTanks * sizeof(RuntimeError*));
+    this->errors = (const RuntimeError**) realloc(this->errors, this->totalWaterTanks * sizeof(const RuntimeError*));
     this->waterTanks = (WaterTank**) realloc(this->waterTanks, this->totalWaterTanks * sizeof(WaterTank*));
     this->waterTankNames = (String*) realloc(this->waterTankNames, this->totalWaterTanks * sizeof(String));
 }

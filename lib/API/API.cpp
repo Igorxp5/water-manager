@@ -24,7 +24,7 @@ void API::createWaterSource(String name, short pin, String waterTankName) {
     this->manager->registerWaterSource(name, waterSource);
 }
 
-void API::createWaterTank(String name, short volumeReaderPin, double volumeFactor, double pressureFactor) {
+void API::createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor) {
     IOInterface* io = this->getOrCreateIO(volumeReaderPin, ANALOGIC, READ_ONLY);
     VolumeReader* volumeReader = new VolumeReader(io, pressureFactor, volumeFactor); 
     WaterTank* waterTank = new WaterTank(volumeReader);
@@ -32,7 +32,7 @@ void API::createWaterTank(String name, short volumeReaderPin, double volumeFacto
     this->manager->registerWaterTank(name, waterTank);
 }
 
-void API::createWaterTank(String name, short volumeReaderPin, double volumeFactor, double pressureFactor, String waterSourceName) {
+void API::createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor, String waterSourceName) {
     IOInterface* io = this->getOrCreateIO(volumeReaderPin, ANALOGIC, READ_ONLY);
     WaterSource* waterSource = this->getWaterSource(waterSourceName);
 
@@ -42,17 +42,17 @@ void API::createWaterTank(String name, short volumeReaderPin, double volumeFacto
     this->manager->registerWaterTank(name, waterTank);
 }
 
-void API::setWaterTankMinimumVolume(String name, double minimum) {
+void API::setWaterTankMinimumVolume(String name, float minimum) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
     waterTank->minimumVolume = minimum;
 }
 
-void API::setWaterTankMaxVolume(String name, double max) {
+void API::setWaterTankMaxVolume(String name, float max) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
     waterTank->maxVolume = max;
 }
 
-void API::setWaterZeroVolume(String name, double pressure) {
+void API::setWaterZeroVolume(String name, float pressure) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
     waterTank->setZeroVolume(pressure);
 }
@@ -83,12 +83,12 @@ unsigned int API::getWaterTankList(String* list) {
     return this->manager->getWaterTankNames(list);
 }
 
-double API::getWaterTankVolume(String name) {
+float API::getWaterTankVolume(String name) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
     return waterTank->getVolume();
 }
 
-double API::getWaterTankPressure(String name) {
+float API::getWaterTankPressure(String name) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
     return waterTank->getPressure();
 }
@@ -111,18 +111,26 @@ void API::reset() {
     this->manager = new Manager();
 }
 
-unsigned int API::getError(RuntimeError** list) {
+void API::managerLoop() {
+    this->manager->loop();
+}
+
+unsigned int API::getError(const RuntimeError** list) {
     return this->manager->getErrors(list);
 }
 
-IOInterface* API::getOrCreateIO(unsigned pin, IOType type, IOMode mode=READ_ONLY) {
+IOInterface* API::getOrCreateIO(unsigned pin, IOType type, IOMode mode) {
     IOInterface* io = IOInterface::get(pin);
     if (io == NULL) {
+        #ifdef TEST
+            io = new TestIO(pin, mode);
+        #else
         if (type == DIGITAL) {
             io = new DigitalIO(pin, mode);
         } else {
             io = new AnalogicIO(pin, mode);
         }
+        #endif
     }
     return io;
 }

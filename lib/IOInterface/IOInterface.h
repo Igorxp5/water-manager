@@ -3,11 +3,11 @@
 
 enum IOMode {
     READ_ONLY, WRITE_ONLY
-}
+};
 
 enum IOType {
-    NULL, DIGITAL, ANALOGIC
-}
+    ANY, DIGITAL, ANALOGIC
+};
 
 class IOInterface
 {
@@ -49,6 +49,7 @@ class AnalogicIO: public IOInterface
         void write(unsigned int w);
 };
 
+#ifdef TEST
 class TestIO: public IOInterface
 {
     public:
@@ -58,5 +59,5 @@ class TestIO: public IOInterface
         unsigned int read();
         void write(unsigned int w);
 };
-
+#endif
 #endif
