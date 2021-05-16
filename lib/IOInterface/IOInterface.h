@@ -2,7 +2,7 @@
 #define INPUT_SOURCE_H
 
 enum IOMode {
-    READ_ONLY, WRITE_ONLY
+    READ_ONLY, WRITE_ONLY, READ_WRITE
 };
 
 enum IOType {
@@ -19,6 +19,7 @@ class IOInterface
 
         static IOInterface* get(unsigned int pin);
         static void remove(unsigned int pin);
+        static void removeAll();
 
     protected:
         unsigned int pin;
@@ -28,7 +29,7 @@ class IOInterface
         static IOInterface** ios;
         static unsigned int* ioPins;
         static unsigned int totalIos;
-        static unsigned long getIndex(unsigned int pin);
+        static int getIndex(unsigned int pin);
 };
 
 class DigitalIO: public IOInterface
@@ -53,7 +54,7 @@ class AnalogicIO: public IOInterface
 class TestIO: public IOInterface
 {
     public:
-        TestIO(unsigned int pin, IOMode mode);
+        TestIO(unsigned int pin);
 
         unsigned int value = 0; 
         unsigned int read();

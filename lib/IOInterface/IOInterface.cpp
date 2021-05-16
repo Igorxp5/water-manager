@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-unsigned long ITEM_NOT_FOUND = -1;
+int ITEM_NOT_FOUND = -1;
 
 IOInterface** IOInterface::ios = NULL;
 unsigned int* IOInterface::ioPins = 0;
@@ -12,8 +12,8 @@ IOInterface::IOInterface(unsigned int pin, IOMode mode) {
     this->pin = pin;
     this->mode = mode;
 
-	unsigned int ioIndex = IOInterface::getIndex(pin);
-	if (ioIndex == ITEM_NOT_FOUND) {
+	int ioIndex = IOInterface::getIndex(pin);
+	if (ioIndex != ITEM_NOT_FOUND) {
 		IOInterface::ios[ioIndex] = this;
 	} else {
 		IOInterface::totalIos += 1;
@@ -25,16 +25,42 @@ IOInterface::IOInterface(unsigned int pin, IOMode mode) {
 }
 
 IOInterface* IOInterface::get(unsigned int pin) {
-    unsigned int ioIndex = IOInterface::getIndex(pin);
+    int ioIndex = IOInterface::getIndex(pin);
 	if (ioIndex != ITEM_NOT_FOUND) {
 		return IOInterface::ios[ioIndex];
 	}
 	return NULL;
 }
 
-unsigned long IOInterface::getIndex(unsigned int pin) {
+void IOInterface::remove(unsigned int pin) {
+    int ioIndex = IOInterface::getIndex(pin);
+	if (ioIndex == ITEM_NOT_FOUND) {
+		//throw PIN_NOT_FOUND
+	} else {
+		delete IOInterface::ios[ioIndex];
+
+		for (unsigned int i = ioIndex + 1; i < IOInterface::totalIos; i++) {
+			IOInterface::ios[i - 1] = IOInterface::ios[i];
+			IOInterface::ioPins[i - 1] = IOInterface::ioPins[i];
+		}
+
+		IOInterface::totalIos -= 1;
+
+		IOInterface::ios = (IOInterface**) realloc(IOInterface::ios, IOInterface::totalIos * sizeof(IOInterface*));
+		IOInterface::ioPins = (unsigned int*) realloc(IOInterface::ioPins, IOInterface::totalIos * sizeof(unsigned int));
+	}
+
+}
+
+void IOInterface::removeAll() {
 	for (unsigned int i = 0; i < IOInterface::totalIos; i++) {
-        if (IOInterface::ioPins[i] == pin) {
+		IOInterface::remove(IOInterface::ioPins[i]);
+	}
+}
+
+int IOInterface::getIndex(unsigned int pin) {
+	for (unsigned int i = 0; i < IOInterface::totalIos; i++) {
+		if (IOInterface::ioPins[i] == pin) {
             return i;
         }
     }
@@ -62,6 +88,10 @@ void DigitalIO::write(unsigned int w) {
 }
 
 #ifdef TEST
+TestIO::TestIO(unsigned int pin) : IOInterface(pin, READ_WRITE) {
+
+}
+
 unsigned int TestIO::read() {
 	return this->value;
 }

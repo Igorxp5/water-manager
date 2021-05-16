@@ -5,8 +5,6 @@
 #include "OperationMode.h"
 #include "IOInterface.h"
 
-const long ITEM_NOT_FOUND = -1;
-
 API::API() {
     this->manager = new Manager();
 }
@@ -123,7 +121,7 @@ IOInterface* API::getOrCreateIO(unsigned pin, IOType type, IOMode mode) {
     IOInterface* io = IOInterface::get(pin);
     if (io == NULL) {
         #ifdef TEST
-            io = new TestIO(pin, mode);
+            io = new TestIO(pin);
         #else
         if (type == DIGITAL) {
             io = new DigitalIO(pin, mode);

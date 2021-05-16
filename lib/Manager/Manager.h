@@ -39,8 +39,8 @@ class Manager
         unsigned int totalWaterTanks = 0;
         unsigned int totalWaterSources = 0;
 
-        long getWaterTankIndex(String name);
-        long getWaterSourceIndex(String name);
+        int getWaterTankIndex(String name);
+        int getWaterSourceIndex(String name);
 };
 
 #endif

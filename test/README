@@ -9,3 +9,8 @@ in the development cycle.
 
 More information about PlatformIO Unit Testing:
 - https://docs.platformio.org/page/plus/unit-testing.html
+
+*How to build protobuf files*
+```
+protoc --nanopb_out=. --python_out=. test.proto
+```

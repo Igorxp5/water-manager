@@ -6,6 +6,7 @@ message _TestRequest {
         _TestCreateIO createIO = 2;
         _TestSetIOValue setIOValue = 3;
         _TestGetIOValue getIOValue = 4;
+        _TestClearIOS clearIOs = 5;
     }
 }
 
@@ -13,14 +14,15 @@ message _TestResponseValue {
     oneof value {
         bool boolValue = 2;
         int32 intValue = 3;
-        double doubleValue = 4;
-        string stringVlaue = 5;
+        float doubleValue = 4;
+        string stringValue = 5;
     }
 }
 
 message _TestResponse {
     uint64 id = 1;
     _TestResponseValue message = 2;
+    bool error = 3;
 }
 
 message _TestCreateIO {
@@ -34,4 +36,7 @@ message _TestSetIOValue {
 
 message _TestGetIOValue {
     uint32 pin = 1;
+}
+
+message _TestClearIOS {
 }
