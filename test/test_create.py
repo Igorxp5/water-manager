@@ -7,7 +7,7 @@ from protobuf.out.python.api_pb2 import Request
 
 def test_create_water_source(arduino):
     request = Request()
-    request.id = utils.random_request_id()
+    request.id = utils.generate_request_id()
     request.createWaterSource.name = 'Registro da Compesa'
     request.createWaterSource.pin = 15
 
