@@ -1,15 +1,22 @@
 import time
 
-from protobuf.out.python.api_pb2 import CreateWaterSource
+import utils
+
+from protobuf.out.python.api_pb2 import Request
 
 
 def test_create_water_source(arduino):
-    create_water_source = CreateWaterSource()
-    create_water_source.name = 'Registro da Compesa'
-    create_water_source.pin = 15
-    
-    arduino.write(b'' + create_water_source.SerializeToString())
-    time.sleep(1)
+    request = Request()
+    request.id = utils.random_request_id()
+    request.createWaterSource.name = 'Registro da Compesa'
+    request.createWaterSource.pin = 15
+
+    payload = request.SerializeToString()
+
+    print(f'Sending request ({request.id})...')
+    print(f'Request payload: {repr(payload)}')
+    utils.send_api_message(arduino, payload)
+    time.sleep(2)
     print(arduino.read(arduino.in_waiting))
 
 # Turn off water sources when the program crashes
