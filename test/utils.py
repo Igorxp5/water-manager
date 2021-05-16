@@ -75,3 +75,15 @@ def get_pin_value(arduino, pin):
     assert response.error == False
 
     return response.message.intValue
+
+def clear_pins(arduino):
+    request = _TestRequest()
+    request.id = generate_request_id()
+    request.clearIOs.SetInParent()
+
+    payload = request.SerializeToString()
+    send_test_message(arduino, payload)
+    response = read_response(arduino)
+
+    assert isinstance(response, _TestResponse)
+    assert response.error == False
