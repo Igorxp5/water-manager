@@ -75,3 +75,6 @@ def test_handle_after_truncated_messages(arduino):
 
     assert isinstance(response, Response)
     assert response.id == request.id
+
+
+# Program should not crash due a large request

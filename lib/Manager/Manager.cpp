@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "Manager.h"
+#include "Utils.h"
 
 const int ITEM_NOT_FOUND = -1;
 
@@ -35,7 +36,7 @@ WaterSource* Manager::getWaterSource(String name) {
 unsigned int Manager::getWaterSourceNames(String* list) {
     list = (String*) realloc(list, this->totalWaterSources * sizeof(String));
     for (unsigned int i = 0; i < this->totalWaterSources; i++) {
-        list[i] = this->waterSourceNames[i];
+        list[i] = *this->waterSourceNames[i];
     }
     return this->totalWaterSources;
 }
@@ -43,7 +44,7 @@ unsigned int Manager::getWaterSourceNames(String* list) {
 unsigned int Manager::getWaterTankNames(String* list) {
     list = (String*) realloc(list, this->totalWaterTanks * sizeof(String));
     for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
-        list[i] = this->waterTankNames[i];
+        list[i] = *this->waterTankNames[i];
     }
     return this->totalWaterTanks;
 }
@@ -79,19 +80,23 @@ void Manager::registerWaterSource(String name, WaterSource* waterSource) {
         this->totalWaterSources += 1;
 
         this->waterSources = (WaterSource**) realloc(this->waterSources, this->totalWaterSources * sizeof(WaterSource*));
-        this->waterSourceNames = (String*) realloc(this->waterSourceNames, this->totalWaterSources * sizeof(String));
+        this->waterSourceNames = (String**) realloc(this->waterSourceNames, this->totalWaterSources * sizeof(String*));
 
-        this->waterSourceNames[this->totalWaterSources - 1] = name;
         this->waterSources[this->totalWaterSources - 1] = waterSource;
+        this->waterSourceNames[this->totalWaterSources - 1] = new String(name);
     }
 }
 
-void Manager::unregisterWaterSource(String name) {
+WaterSource* Manager::unregisterWaterSource(String name) {
+    WaterSource* waterSource = NULL;
+
     int waterSourceIndex = this->getWaterSourceIndex(name);
     if (waterSourceIndex == ITEM_NOT_FOUND) {
         //throw WATER_SOURCE_NOT_FOUND;
     } else {
-        //TODO: Need to think way to remove WaterSource object from the memory
+        waterSource = this->waterSources[waterSourceIndex];
+        String* waterSourceName = this->waterSourceNames[waterSourceIndex];
+
         for (unsigned int i = waterSourceIndex + 1; i < this->totalWaterSources; i++) {
             this->waterSources[i - 1] = this->waterSources[i];
             this->waterSourceNames[i - 1] = this->waterSourceNames[i];
@@ -100,8 +105,11 @@ void Manager::unregisterWaterSource(String name) {
         this->totalWaterSources -= 1;
 
         this->waterSources = (WaterSource**) realloc(this->waterSources, this->totalWaterSources * sizeof(WaterSource*));
-        this->waterSourceNames = (String*) realloc(this->waterSourceNames, this->totalWaterSources * sizeof(String));
+        this->waterSourceNames = (String**) realloc(this->waterSourceNames, this->totalWaterSources * sizeof(String*));
+        
+        delete waterSourceName;
     }
+    return waterSource;
 }
 
 void Manager::registerWaterTank(String name, WaterTank* waterTank) {
@@ -112,20 +120,23 @@ void Manager::registerWaterTank(String name, WaterTank* waterTank) {
 
         this->errors = (const RuntimeError**) realloc(this->errors, this->totalWaterTanks * sizeof(const RuntimeError*));
         this->waterTanks = (WaterTank**) realloc(this->waterTanks, this->totalWaterTanks * sizeof(WaterTank*));
-        this->waterTankNames = (String*) realloc(this->waterTankNames, this->totalWaterTanks * sizeof(String));
+        this->waterTankNames = (String**) realloc(this->waterTankNames, this->totalWaterTanks * sizeof(String*));
 
         this->errors[this->totalWaterTanks - 1] = NULL;
-        this->waterTankNames[this->totalWaterTanks - 1] = name;
+        this->waterTankNames[this->totalWaterTanks - 1] = new String(name);
         this->waterTanks[this->totalWaterTanks - 1] = waterTank;
     }
 }
 
-void Manager::unregisterWaterTank(String name) {
+WaterTank* Manager::unregisterWaterTank(String name) {
+    WaterTank* waterTank = NULL;
     int waterTankIndex = this->getWaterTankIndex(name);
     if (waterTankIndex == ITEM_NOT_FOUND) {
         //throw WATER_TANK_NOT_FOUND;
     } else {
-        //TODO: Need to think way to remove WaterTank object from the memory
+        waterTank = this->waterTanks[waterTankIndex];
+        String* waterTankName = this->waterTankNames[waterTankIndex];
+
         for (unsigned int i = waterTankIndex + 1; i < this->totalWaterTanks; i++) {
             this->errors[i - 1] = this->errors[i];
             this->waterTanks[i - 1] = this->waterTanks[i];
@@ -136,8 +147,11 @@ void Manager::unregisterWaterTank(String name) {
 
         this->errors = (const RuntimeError**) realloc(this->errors, this->totalWaterTanks * sizeof(const RuntimeError*));
         this->waterTanks = (WaterTank**) realloc(this->waterTanks, this->totalWaterTanks * sizeof(WaterTank*));
-        this->waterTankNames = (String*) realloc(this->waterTankNames, this->totalWaterTanks * sizeof(String));
+        this->waterTankNames = (String**) realloc(this->waterTankNames, this->totalWaterTanks * sizeof(String*));
+        
+        delete waterTankName;
     }
+    return waterTank;
 }
 
 void Manager::fillWaterTank(String name) {
@@ -160,7 +174,7 @@ void Manager::loop() {
 
 int Manager::getWaterTankIndex(String name) {
     for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
-        if (this->waterTankNames[i] == name) {
+        if (*this->waterTankNames[i] == name) {
             return i;
         }
     }
@@ -169,7 +183,7 @@ int Manager::getWaterTankIndex(String name) {
 
 int Manager::getWaterSourceIndex(String name) {
     for (unsigned int i = 0; i < this->totalWaterSources; i++) {
-        if (this->waterSourceNames[i] == name) {
+        if (*this->waterSourceNames[i] == name) {
             return i;
         }
     }

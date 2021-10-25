@@ -22,18 +22,18 @@ class Manager
         void setOperationMode(OperationMode mode);
         void setWaterSourceState(String name, bool enabled);
         void registerWaterSource(String name, WaterSource* waterSource);
-        void unregisterWaterSource(String name);
+        WaterSource* unregisterWaterSource(String name);
         void registerWaterTank(String name, WaterTank* waterTank);
-        void unregisterWaterTank(String name);
+        WaterTank* unregisterWaterTank(String name);
         void fillWaterTank(String name);
         void stopFillingWaterTank(String name);
         void loop();
 
     private:
         WaterTank** waterTanks = NULL;
-        String* waterTankNames = NULL;
+        String** waterTankNames = NULL;
         WaterSource** waterSources = NULL;
-        String* waterSourceNames = NULL;
+        String** waterSourceNames = NULL;
         OperationMode mode = MANUAL;
         const RuntimeError** errors = NULL;
         unsigned int totalWaterTanks = 0;

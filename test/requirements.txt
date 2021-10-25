@@ -1,5 +1,7 @@
-aiofiles==0.6.0
+aiofiles==0.7.0
 ajsonrpc==1.1.0
+anyio==3.3.4
+asgiref==3.4.1
 atomicwrites==1.4.0
 attrs==21.2.0
 bottle==0.12.19
@@ -14,9 +16,9 @@ iniconfig==1.1.1
 marshmallow==3.11.1
 nanopb==0.4.5.post1
 packaging==20.9
-platformio==5.1.1
+platformio==5.2.2
 pluggy==0.13.1
-protobuf==3.16.0
+protobuf==3.19.0
 py==1.10.0
 pyelftools==0.27
 pyparsing==2.4.7
@@ -25,10 +27,11 @@ pytest==6.2.4
 requests==2.25.1
 semantic-version==2.8.5
 six==1.16.0
-starlette==0.14.2
+sniffio==1.2.0
+starlette==0.16.0
 tabulate==0.8.9
 toml==0.10.2
 urllib3==1.26.4
-uvicorn==0.13.4
+uvicorn==0.15.0
 wsproto==1.0.0
-zeroconf==0.28.8
+zeroconf==0.36.9

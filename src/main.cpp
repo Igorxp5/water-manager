@@ -7,6 +7,8 @@
 #include "IOInterface.h"
 #include "api.pb.c"
 
+#include "Utils.h"
+
 #ifdef TEST
 #include "test.pb.c"
 #endif
@@ -90,18 +92,36 @@ void sendResponse() {
 void sendErrorResponse(const char* error) {
     response.error = true;
     response.has_message = true;
-    response.message.which_value = Value_stringValue_tag;
-    strcpy(response.message.value.stringValue, error);
+    response.message.has_value = true;
+    response.message.value.which_content = PrimitiveValue_stringValue_tag;
+    strcpy(response.message.value.content.stringValue, error);
     sendResponse();
 }
 
 void sendOkResponse(unsigned int requestId) {
     response.id = requestId;
+    response.error = false;
     sendResponse();
 }
 
 void handleAPIRequest() {
-    sendOkResponse(request.id);
+    if (request.which_message == Request_createWaterSource_tag) {
+        api->createWaterSource(request.message.createWaterSource.name, request.message.createWaterSource.pin);
+        sendOkResponse(request.id);
+    } else if (request.which_message == Request_getWaterSourceList_tag) {
+        String* waterSourceList;
+        unsigned int totalWaterSources = api->getWaterSourceList(waterSourceList);
+        response.has_message = true;
+        response.message.listValue_count = totalWaterSources;
+        PrimitiveValue value = PrimitiveValue_init_zero;
+        for (unsigned int i = 0; i < totalWaterSources; i++) {
+            value.which_content = PrimitiveValue_stringValue_tag;
+            strcpy(value.content.stringValue, waterSourceList[i].c_str());
+            response.message.listValue[i] = value;
+        }
+        sendOkResponse(request.id);
+    }
+    
 }
 
 #ifdef TEST
@@ -122,7 +142,7 @@ void sendTestResponse() {
 void sendErrorTestResponse(const char* error) {
     testResponse.error = true;
     testResponse.has_message = true;
-    testResponse.message.which_value = Value_stringValue_tag;
+    testResponse.message.which_value = _TestResponseValue_stringValue_tag;
     strcpy(testResponse.message.value.stringValue, error);
     sendTestResponse();
 }

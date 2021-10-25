@@ -97,11 +97,13 @@ bool API::getWaterSourceState(String name) {
 }
 
 void API::removeWaterSource(String name) {
-    this->manager->unregisterWaterSource(name);
+    WaterSource* waterSource = this->manager->unregisterWaterSource(name);
+    delete waterSource;
 }
 
 void API::removeWaterTank(String name) {
-    this->manager->unregisterWaterTank(name);
+    WaterTank* waterTank = this->manager->unregisterWaterTank(name);
+    delete waterTank;
 }
 
 void API::reset() {
