@@ -7,6 +7,7 @@ class Utils
 {
     public:
         static void sendDebugResponse(String message);
+        static void sendDebugResponse(char* message);
 };
 
 #endif

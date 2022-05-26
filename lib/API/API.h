@@ -12,8 +12,8 @@ class API
     public:
         API();
 
-        void createWaterSource(String name, short pin);
-        void createWaterSource(String name, short pin, String waterTankName);
+        void createWaterSource(char* name, short pin);
+        void createWaterSource(char* name, short pin, String waterTankName);
         void createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor);
         void createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor, String waterSourceName);
         void setWaterTankMinimumVolume(String name, float minimum);
@@ -21,14 +21,15 @@ class API
         void setWaterZeroVolume(String name, float pressure);
         void setAutomaticMode();
         void setManualMode();
-        void enableWaterSource(String name);
-        void disableWaterSource(String name);
-        unsigned int getWaterSourceList(String* list);
+        void enableWaterSource(char* name);
+        void disableWaterSource(char* name);
+        char** getWaterSourceList();
         unsigned int getWaterTankList(String* list);
         float getWaterTankVolume(String name);
         float getWaterTankPressure(String name);
-        bool getWaterSourceState(String name);
-        void removeWaterSource(String name);
+        bool getWaterSourceState(char* name);
+        unsigned int getTotalWaterSources();
+        void removeWaterSource(char* name);
         void removeWaterTank(String name);
         void reset();
         void managerLoop();

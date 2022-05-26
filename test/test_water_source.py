@@ -33,10 +33,11 @@ def test_create_water_source(arduino):
     assert isinstance(response, Response)
     assert response.error == False
     assert response.id == request.id
-    print(type(response.message.listValue))
-    print(repr(response.message.listValue))
-    print(response.message.listValue)
-    assert response.message.listValue == ['Registro da Compesa']
+    
+    water_sources = utils.parse_api_response_list_value(response.message.listValue)
+    assert water_sources == ['Registro da Compesa']
+
+# Max length of water source name
 
 # Turn off water sources when the program crashes
 

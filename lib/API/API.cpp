@@ -9,13 +9,13 @@ API::API() {
     this->manager = new Manager();
 }
 
-void API::createWaterSource(String name, short pin) {
+void API::createWaterSource(char* name, short pin) {
     IOInterface* io = this->getOrCreateIO(pin, DIGITAL, READ_ONLY);
     WaterSource* waterSource = new WaterSource(io);
     this->manager->registerWaterSource(name, waterSource);
 }
 
-void API::createWaterSource(String name, short pin, String waterTankName) {
+void API::createWaterSource(char* name, short pin, String waterTankName) {
     IOInterface* io = this->getOrCreateIO(pin, DIGITAL, READ_ONLY);
     WaterTank* waterTank = this->manager->getWaterTank(waterTankName);
     WaterSource* waterSource = new WaterSource(io, waterTank);
@@ -65,16 +65,16 @@ void API::setManualMode() {
     this->manager->setOperationMode(mode);
 }
 
-void API::enableWaterSource(String name) {
+void API::enableWaterSource(char* name) {
     this->manager->setWaterSourceState(name, true);
 }
 
-void API::disableWaterSource(String name) {
+void API::disableWaterSource(char* name) {
     this->manager->setWaterSourceState(name, false);
 }
 
-unsigned int API::getWaterSourceList(String* list) {
-    return this->manager->getWaterSourceNames(list);
+char** API::getWaterSourceList() {
+    return this->manager->getWaterSourceNames();
 }
 
 unsigned int API::getWaterTankList(String* list) {
@@ -91,12 +91,16 @@ float API::getWaterTankPressure(String name) {
     return waterTank->getPressure();
 }
 
-bool API::getWaterSourceState(String name) {
+bool API::getWaterSourceState(char* name) {
     WaterSource* waterSource = this->manager->getWaterSource(name);
     return waterSource->isEnabled();
 }
 
-void API::removeWaterSource(String name) {
+unsigned int API::getTotalWaterSources() {
+    return this->manager->getTotalWaterSources();
+}
+
+void API::removeWaterSource(char* name) {
     WaterSource* waterSource = this->manager->unregisterWaterSource(name);
     delete waterSource;
 }
@@ -107,8 +111,7 @@ void API::removeWaterTank(String name) {
 }
 
 void API::reset() {
-    delete this->manager;
-    this->manager = new Manager();
+    this->manager->reset();
 }
 
 void API::managerLoop() {

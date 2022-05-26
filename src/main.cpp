@@ -11,6 +11,7 @@
 
 #ifdef TEST
 #include "test.pb.c"
+#include "MemoryFree.h"
 #endif
 
 const unsigned int READ_TIMEOUT = 2500; //Miliseconds
@@ -109,19 +110,19 @@ void handleAPIRequest() {
         api->createWaterSource(request.message.createWaterSource.name, request.message.createWaterSource.pin);
         sendOkResponse(request.id);
     } else if (request.which_message == Request_getWaterSourceList_tag) {
-        String* waterSourceList;
-        unsigned int totalWaterSources = api->getWaterSourceList(waterSourceList);
+        char** waterSourceList = api->getWaterSourceList();
+        unsigned int totalWaterSources = api->getTotalWaterSources();
         response.has_message = true;
         response.message.listValue_count = totalWaterSources;
         PrimitiveValue value = PrimitiveValue_init_zero;
         for (unsigned int i = 0; i < totalWaterSources; i++) {
             value.which_content = PrimitiveValue_stringValue_tag;
-            strcpy(value.content.stringValue, waterSourceList[i].c_str());
+            strcpy(value.content.stringValue, waterSourceList[i]);
             response.message.listValue[i] = value;
         }
         sendOkResponse(request.id);
+        free(waterSourceList);
     }
-    
 }
 
 #ifdef TEST
@@ -149,6 +150,13 @@ void sendErrorTestResponse(const char* error) {
 
 void sendOkTestResponse(unsigned int requestId) {
     testResponse.id = requestId;
+    sendTestResponse();
+}
+
+void sendOkTestResponse(unsigned int requestId, int message) {
+    testResponse.has_message = true;
+    testResponse.message.which_value = _TestResponseValue_intValue_tag;
+    testResponse.message.value.intValue = message;
     sendTestResponse();
 }
 
@@ -183,6 +191,12 @@ void handleTestRequest() {
             sendOkTestResponse(testRequest.id);
         }
     } else if (testRequest.which_message == _TestRequest_clearIOs_tag) {
+        IOInterface::removeAll();
+        sendOkTestResponse(testRequest.id);
+    } else if (testRequest.which_message == _TestRequest_memoryFree_tag) {
+        sendOkTestResponse(testRequest.id, freeMemory());
+    } else if (testRequest.which_message == _TestRequest_resetAPI_tag) {
+        api->reset();
         IOInterface::removeAll();
         sendOkTestResponse(testRequest.id);
     }

@@ -19,7 +19,8 @@ def read_response(arduino):
     message_type = struct.unpack('B', arduino.read(1))[0]
 
     if message_type == 3:
-        print('[DEBUG]', arduino.read_until())
+        data = arduino.read_until()
+        print('[DEBUG]', data.decode())
         return read_response(arduino)  # Ignore DEBUG messages, wait for next message
 
     message_length = struct.unpack('<H', arduino.read(2))[0]
@@ -87,3 +88,37 @@ def clear_pins(arduino):
 
     assert isinstance(response, _TestResponse)
     assert response.error == False
+
+def reset_api(arduino):
+    request = _TestRequest()
+    request.id = generate_request_id()
+    request.resetAPI.SetInParent()
+
+    payload = request.SerializeToString()
+    send_test_message(arduino, payload)
+    response = read_response(arduino)
+
+    assert isinstance(response, _TestResponse)
+    assert response.error == False
+
+
+def current_free_memory(arduino):
+    request = _TestRequest()
+    request.id = generate_request_id()
+    request.memoryFree.SetInParent()
+
+    payload = request.SerializeToString()
+    send_test_message(arduino, payload)
+    response = read_response(arduino)
+
+    assert isinstance(response, _TestResponse)
+    assert response.error == False
+
+    return response.message.intValue;
+
+
+def parse_api_response_list_value(raw_list_value):
+    response_list = list(raw_list_value)
+    for i in range(len(response_list)):
+        response_list[i] = response_list[i].ListFields()[0][1]
+    return response_list

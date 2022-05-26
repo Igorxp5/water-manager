@@ -40,7 +40,7 @@ def test_error_decode_request(arduino):
     assert isinstance(response, Response)
     assert response.id == 0
     assert response.error == True
-    assert response.message.stringValue == 'Failed to decode the request'
+    assert response.message.value.stringValue == 'Failed to decode the request'
 
 
 def test_handle_after_truncated_messages(arduino):
@@ -58,15 +58,14 @@ def test_handle_after_truncated_messages(arduino):
     for trunc in range(2, 5):
         truncated_payload = struct.pack(utils.PACKET_FORMAT, 1, len(payload)) + payload
         truncated_payload = truncated_payload[:trunc]
-        print(f'Testing truncated data: {repr(truncated_payload)}...')
-        
+
         arduino.write(truncated_payload)
 
         response = utils.read_response(arduino)
         assert isinstance(response, Response)
         assert response.id == 0
         assert response.error == True
-        assert response.message.stringValue == 'Truncated message received'
+        assert response.message.value.stringValue == 'Truncated message received'
 
     # Sending valid message
     utils.send_api_message(arduino, payload)

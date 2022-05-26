@@ -1,0 +1,12 @@
+{
+    "python.testing.pytestArgs": [
+        "-s",
+        "-v",
+        "-c",
+        "test/pytest.ini",
+        "test"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.terminal.activateEnvironment": true
+}

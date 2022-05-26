@@ -7,6 +7,8 @@ message _TestRequest {
         _TestSetIOValue setIOValue = 3;
         _TestGetIOValue getIOValue = 4;
         _TestClearIOS clearIOs = 5;
+        _TestMemoryFree memoryFree = 6;
+        _TestResetAPI resetAPI = 7;
     }
 }
 
@@ -39,4 +41,10 @@ message _TestGetIOValue {
 }
 
 message _TestClearIOS {
+}
+
+message _TestMemoryFree {
+}
+
+message _TestResetAPI {
 }

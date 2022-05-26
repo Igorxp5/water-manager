@@ -3,6 +3,7 @@
 # source: test.proto
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
+from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -13,352 +14,19 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor.FileDescriptor(
-  name='test.proto',
-  package='',
-  syntax='proto3',
-  serialized_options=None,
-  create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\ntest.proto\"\xbd\x01\n\x0c_TestRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\"\n\x08\x63reateIO\x18\x02 \x01(\x0b\x32\x0e._TestCreateIOH\x00\x12&\n\nsetIOValue\x18\x03 \x01(\x0b\x32\x10._TestSetIOValueH\x00\x12&\n\ngetIOValue\x18\x04 \x01(\x0b\x32\x10._TestGetIOValueH\x00\x12\"\n\x08\x63learIOs\x18\x05 \x01(\x0b\x32\x0e._TestClearIOSH\x00\x42\t\n\x07message\"t\n\x12_TestResponseValue\x12\x13\n\tboolValue\x18\x02 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x03 \x01(\x05H\x00\x12\x15\n\x0b\x64oubleValue\x18\x04 \x01(\x02H\x00\x12\x15\n\x0bstringValue\x18\x05 \x01(\tH\x00\x42\x07\n\x05value\"P\n\r_TestResponse\x12\n\n\x02id\x18\x01 \x01(\x04\x12$\n\x07message\x18\x02 \x01(\x0b\x32\x13._TestResponseValue\x12\r\n\x05\x65rror\x18\x03 \x01(\x08\"\x1c\n\r_TestCreateIO\x12\x0b\n\x03pin\x18\x01 \x01(\r\"-\n\x0f_TestSetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\r\"\x1e\n\x0f_TestGetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\"\x0f\n\r_TestClearIOSb\x06proto3'
-)
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ntest.proto\"\x89\x02\n\x0c_TestRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\"\n\x08\x63reateIO\x18\x02 \x01(\x0b\x32\x0e._TestCreateIOH\x00\x12&\n\nsetIOValue\x18\x03 \x01(\x0b\x32\x10._TestSetIOValueH\x00\x12&\n\ngetIOValue\x18\x04 \x01(\x0b\x32\x10._TestGetIOValueH\x00\x12\"\n\x08\x63learIOs\x18\x05 \x01(\x0b\x32\x0e._TestClearIOSH\x00\x12&\n\nmemoryFree\x18\x06 \x01(\x0b\x32\x10._TestMemoryFreeH\x00\x12\"\n\x08resetAPI\x18\x07 \x01(\x0b\x32\x0e._TestResetAPIH\x00\x42\t\n\x07message\"t\n\x12_TestResponseValue\x12\x13\n\tboolValue\x18\x02 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x03 \x01(\x05H\x00\x12\x15\n\x0b\x64oubleValue\x18\x04 \x01(\x02H\x00\x12\x15\n\x0bstringValue\x18\x05 \x01(\tH\x00\x42\x07\n\x05value\"P\n\r_TestResponse\x12\n\n\x02id\x18\x01 \x01(\x04\x12$\n\x07message\x18\x02 \x01(\x0b\x32\x13._TestResponseValue\x12\r\n\x05\x65rror\x18\x03 \x01(\x08\"\x1c\n\r_TestCreateIO\x12\x0b\n\x03pin\x18\x01 \x01(\r\"-\n\x0f_TestSetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\r\"\x1e\n\x0f_TestGetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\"\x0f\n\r_TestClearIOS\"\x11\n\x0f_TestMemoryFree\"\x0f\n\r_TestResetAPIb\x06proto3')
 
 
 
-
-__TESTREQUEST = _descriptor.Descriptor(
-  name='_TestRequest',
-  full_name='_TestRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='_TestRequest.id', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='createIO', full_name='_TestRequest.createIO', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='setIOValue', full_name='_TestRequest.setIOValue', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='getIOValue', full_name='_TestRequest.getIOValue', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='clearIOs', full_name='_TestRequest.clearIOs', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-    _descriptor.OneofDescriptor(
-      name='message', full_name='_TestRequest.message',
-      index=0, containing_type=None,
-      create_key=_descriptor._internal_create_key,
-    fields=[]),
-  ],
-  serialized_start=15,
-  serialized_end=204,
-)
-
-
-__TESTRESPONSEVALUE = _descriptor.Descriptor(
-  name='_TestResponseValue',
-  full_name='_TestResponseValue',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='boolValue', full_name='_TestResponseValue.boolValue', index=0,
-      number=2, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='intValue', full_name='_TestResponseValue.intValue', index=1,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='doubleValue', full_name='_TestResponseValue.doubleValue', index=2,
-      number=4, type=2, cpp_type=6, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='stringValue', full_name='_TestResponseValue.stringValue', index=3,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-    _descriptor.OneofDescriptor(
-      name='value', full_name='_TestResponseValue.value',
-      index=0, containing_type=None,
-      create_key=_descriptor._internal_create_key,
-    fields=[]),
-  ],
-  serialized_start=206,
-  serialized_end=322,
-)
-
-
-__TESTRESPONSE = _descriptor.Descriptor(
-  name='_TestResponse',
-  full_name='_TestResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='_TestResponse.id', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='message', full_name='_TestResponse.message', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='error', full_name='_TestResponse.error', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=324,
-  serialized_end=404,
-)
-
-
-__TESTCREATEIO = _descriptor.Descriptor(
-  name='_TestCreateIO',
-  full_name='_TestCreateIO',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='pin', full_name='_TestCreateIO.pin', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=406,
-  serialized_end=434,
-)
-
-
-__TESTSETIOVALUE = _descriptor.Descriptor(
-  name='_TestSetIOValue',
-  full_name='_TestSetIOValue',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='pin', full_name='_TestSetIOValue.pin', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='value', full_name='_TestSetIOValue.value', index=1,
-      number=2, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=436,
-  serialized_end=481,
-)
-
-
-__TESTGETIOVALUE = _descriptor.Descriptor(
-  name='_TestGetIOValue',
-  full_name='_TestGetIOValue',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='pin', full_name='_TestGetIOValue.pin', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=483,
-  serialized_end=513,
-)
-
-
-__TESTCLEARIOS = _descriptor.Descriptor(
-  name='_TestClearIOS',
-  full_name='_TestClearIOS',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=515,
-  serialized_end=530,
-)
-
-__TESTREQUEST.fields_by_name['createIO'].message_type = __TESTCREATEIO
-__TESTREQUEST.fields_by_name['setIOValue'].message_type = __TESTSETIOVALUE
-__TESTREQUEST.fields_by_name['getIOValue'].message_type = __TESTGETIOVALUE
-__TESTREQUEST.fields_by_name['clearIOs'].message_type = __TESTCLEARIOS
-__TESTREQUEST.oneofs_by_name['message'].fields.append(
-  __TESTREQUEST.fields_by_name['createIO'])
-__TESTREQUEST.fields_by_name['createIO'].containing_oneof = __TESTREQUEST.oneofs_by_name['message']
-__TESTREQUEST.oneofs_by_name['message'].fields.append(
-  __TESTREQUEST.fields_by_name['setIOValue'])
-__TESTREQUEST.fields_by_name['setIOValue'].containing_oneof = __TESTREQUEST.oneofs_by_name['message']
-__TESTREQUEST.oneofs_by_name['message'].fields.append(
-  __TESTREQUEST.fields_by_name['getIOValue'])
-__TESTREQUEST.fields_by_name['getIOValue'].containing_oneof = __TESTREQUEST.oneofs_by_name['message']
-__TESTREQUEST.oneofs_by_name['message'].fields.append(
-  __TESTREQUEST.fields_by_name['clearIOs'])
-__TESTREQUEST.fields_by_name['clearIOs'].containing_oneof = __TESTREQUEST.oneofs_by_name['message']
-__TESTRESPONSEVALUE.oneofs_by_name['value'].fields.append(
-  __TESTRESPONSEVALUE.fields_by_name['boolValue'])
-__TESTRESPONSEVALUE.fields_by_name['boolValue'].containing_oneof = __TESTRESPONSEVALUE.oneofs_by_name['value']
-__TESTRESPONSEVALUE.oneofs_by_name['value'].fields.append(
-  __TESTRESPONSEVALUE.fields_by_name['intValue'])
-__TESTRESPONSEVALUE.fields_by_name['intValue'].containing_oneof = __TESTRESPONSEVALUE.oneofs_by_name['value']
-__TESTRESPONSEVALUE.oneofs_by_name['value'].fields.append(
-  __TESTRESPONSEVALUE.fields_by_name['doubleValue'])
-__TESTRESPONSEVALUE.fields_by_name['doubleValue'].containing_oneof = __TESTRESPONSEVALUE.oneofs_by_name['value']
-__TESTRESPONSEVALUE.oneofs_by_name['value'].fields.append(
-  __TESTRESPONSEVALUE.fields_by_name['stringValue'])
-__TESTRESPONSEVALUE.fields_by_name['stringValue'].containing_oneof = __TESTRESPONSEVALUE.oneofs_by_name['value']
-__TESTRESPONSE.fields_by_name['message'].message_type = __TESTRESPONSEVALUE
-DESCRIPTOR.message_types_by_name['_TestRequest'] = __TESTREQUEST
-DESCRIPTOR.message_types_by_name['_TestResponseValue'] = __TESTRESPONSEVALUE
-DESCRIPTOR.message_types_by_name['_TestResponse'] = __TESTRESPONSE
-DESCRIPTOR.message_types_by_name['_TestCreateIO'] = __TESTCREATEIO
-DESCRIPTOR.message_types_by_name['_TestSetIOValue'] = __TESTSETIOVALUE
-DESCRIPTOR.message_types_by_name['_TestGetIOValue'] = __TESTGETIOVALUE
-DESCRIPTOR.message_types_by_name['_TestClearIOS'] = __TESTCLEARIOS
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
+__TESTREQUEST = DESCRIPTOR.message_types_by_name['_TestRequest']
+__TESTRESPONSEVALUE = DESCRIPTOR.message_types_by_name['_TestResponseValue']
+__TESTRESPONSE = DESCRIPTOR.message_types_by_name['_TestResponse']
+__TESTCREATEIO = DESCRIPTOR.message_types_by_name['_TestCreateIO']
+__TESTSETIOVALUE = DESCRIPTOR.message_types_by_name['_TestSetIOValue']
+__TESTGETIOVALUE = DESCRIPTOR.message_types_by_name['_TestGetIOValue']
+__TESTCLEARIOS = DESCRIPTOR.message_types_by_name['_TestClearIOS']
+__TESTMEMORYFREE = DESCRIPTOR.message_types_by_name['_TestMemoryFree']
+__TESTRESETAPI = DESCRIPTOR.message_types_by_name['_TestResetAPI']
 _TestRequest = _reflection.GeneratedProtocolMessageType('_TestRequest', (_message.Message,), {
   'DESCRIPTOR' : __TESTREQUEST,
   '__module__' : 'test_pb2'
@@ -408,5 +76,39 @@ _TestClearIOS = _reflection.GeneratedProtocolMessageType('_TestClearIOS', (_mess
   })
 _sym_db.RegisterMessage(_TestClearIOS)
 
+_TestMemoryFree = _reflection.GeneratedProtocolMessageType('_TestMemoryFree', (_message.Message,), {
+  'DESCRIPTOR' : __TESTMEMORYFREE,
+  '__module__' : 'test_pb2'
+  # @@protoc_insertion_point(class_scope:_TestMemoryFree)
+  })
+_sym_db.RegisterMessage(_TestMemoryFree)
 
+_TestResetAPI = _reflection.GeneratedProtocolMessageType('_TestResetAPI', (_message.Message,), {
+  'DESCRIPTOR' : __TESTRESETAPI,
+  '__module__' : 'test_pb2'
+  # @@protoc_insertion_point(class_scope:_TestResetAPI)
+  })
+_sym_db.RegisterMessage(_TestResetAPI)
+
+if _descriptor._USE_C_DESCRIPTORS == False:
+
+  DESCRIPTOR._options = None
+  __TESTREQUEST._serialized_start=15
+  __TESTREQUEST._serialized_end=280
+  __TESTRESPONSEVALUE._serialized_start=282
+  __TESTRESPONSEVALUE._serialized_end=398
+  __TESTRESPONSE._serialized_start=400
+  __TESTRESPONSE._serialized_end=480
+  __TESTCREATEIO._serialized_start=482
+  __TESTCREATEIO._serialized_end=510
+  __TESTSETIOVALUE._serialized_start=512
+  __TESTSETIOVALUE._serialized_end=557
+  __TESTGETIOVALUE._serialized_start=559
+  __TESTGETIOVALUE._serialized_end=589
+  __TESTCLEARIOS._serialized_start=591
+  __TESTCLEARIOS._serialized_end=606
+  __TESTMEMORYFREE._serialized_start=608
+  __TESTMEMORYFREE._serialized_end=625
+  __TESTRESETAPI._serialized_start=627
+  __TESTRESETAPI._serialized_end=642
 # @@protoc_insertion_point(module_scope)

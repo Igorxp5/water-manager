@@ -1,11 +1,12 @@
 #include "IOInterface.h"
 
 #include <Arduino.h>
+#include "Utils.h"
 
 int ITEM_NOT_FOUND = -1;
 
 IOInterface** IOInterface::ios = NULL;
-unsigned int* IOInterface::ioPins = 0;
+unsigned int* IOInterface::ioPins = NULL;
 unsigned int IOInterface::totalIos = 0;
 
 IOInterface::IOInterface(unsigned int pin, IOMode mode) {
@@ -14,6 +15,7 @@ IOInterface::IOInterface(unsigned int pin, IOMode mode) {
 
 	int ioIndex = IOInterface::getIndex(pin);
 	if (ioIndex != ITEM_NOT_FOUND) {
+		delete IOInterface::ios[ioIndex];
 		IOInterface::ios[ioIndex] = this;
 	} else {
 		IOInterface::totalIos += 1;
@@ -53,8 +55,8 @@ void IOInterface::remove(unsigned int pin) {
 }
 
 void IOInterface::removeAll() {
-	for (unsigned int i = 0; i < IOInterface::totalIos; i++) {
-		IOInterface::remove(IOInterface::ioPins[i]);
+	while (IOInterface::totalIos > 0) {
+		IOInterface::remove(IOInterface::ioPins[0]);
 	}
 }
 
