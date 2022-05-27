@@ -3,8 +3,8 @@
         "-s",
         "-v",
         "-c",
-        "test/pytest.ini",
-        "test"
+        "tests/pytest.ini",
+        "tests"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,

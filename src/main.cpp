@@ -90,8 +90,9 @@ void sendResponse() {
     }
 }
 
-void sendErrorResponse(const char* error) {
-    response.error = true;
+void sendErrorResponse(unsigned int requestId, const char* error) {
+    response.has_error = true;
+    response.error = Response_Exception_EXCEPTION;
     response.has_message = true;
     response.message.has_value = true;
     response.message.value.which_content = PrimitiveValue_stringValue_tag;
@@ -99,9 +100,30 @@ void sendErrorResponse(const char* error) {
     sendResponse();
 }
 
+void sendErrorResponse(unsigned int requestId, const RuntimeError* error) {
+    response.has_error = true;
+    response.error = Response_Exception_RUNTIME_ERROR;
+    response.has_message = true;
+    response.message.has_value = true;
+    response.message.value.which_content = PrimitiveValue_stringValue_tag;
+    const char* message = ((Exception*) error)->getMessage();
+    strcpy(response.message.value.content.stringValue, message);
+    sendResponse();
+}
+
+void sendErrorResponse(unsigned int requestId, const InvalidRequest* error) {
+    response.has_error = true;
+    response.error = Response_Exception_INVALID_REQUEST;
+    response.has_message = true;
+    response.message.has_value = true;
+    response.message.value.which_content = PrimitiveValue_stringValue_tag;
+    const char* message = ((Exception*) error)->getMessage();
+    strcpy(response.message.value.content.stringValue, message);
+    sendResponse();
+}
+
 void sendOkResponse(unsigned int requestId) {
     response.id = requestId;
-    response.error = false;
     sendResponse();
 }
 
@@ -140,7 +162,8 @@ void sendTestResponse() {
     }
 }
 
-void sendErrorTestResponse(const char* error) {
+void sendErrorTestResponse(unsigned int requestId, const char* error) {
+    testResponse.id = requestId;
     testResponse.error = true;
     testResponse.has_message = true;
     testResponse.message.which_value = _TestResponseValue_stringValue_tag;
@@ -154,6 +177,7 @@ void sendOkTestResponse(unsigned int requestId) {
 }
 
 void sendOkTestResponse(unsigned int requestId, int message) {
+    testResponse.id = requestId;
     testResponse.has_message = true;
     testResponse.message.which_value = _TestResponseValue_intValue_tag;
     testResponse.message.value.intValue = message;
@@ -167,14 +191,12 @@ void handleTestRequest() {
             io = new TestIO(testRequest.message.createIO.pin);    
             sendOkTestResponse(testRequest.id);
         } else {
-            testResponse.id = testRequest.id;
-            sendErrorTestResponse("TestIO already set with that pin");
+            sendErrorTestResponse(testRequest.id, "TestIO already set with that pin");
         }
     } else if (testRequest.which_message == _TestRequest_setIOValue_tag) {
         IOInterface* io = IOInterface::get(testRequest.message.setIOValue.pin);
         if (io == NULL) {
-            testResponse.id = testRequest.id;
-            sendErrorTestResponse("TestIO with that pin does not exist");
+            sendErrorTestResponse(testRequest.id, "TestIO with that pin does not exist");
         } else {
             io->write(testRequest.message.setIOValue.value);
             sendOkTestResponse(testRequest.id);
@@ -182,8 +204,7 @@ void handleTestRequest() {
     } else if (testRequest.which_message == _TestRequest_getIOValue_tag) {
         IOInterface* io = IOInterface::get(testRequest.message.getIOValue.pin);
         if (io == NULL) {
-            testResponse.id = testRequest.id;
-            sendErrorTestResponse("TestIO with that pin does not exist");
+            sendErrorTestResponse(testRequest.id, "TestIO with that pin does not exist");
         } else {
             testResponse.has_message = true;
             testResponse.message.which_value = _TestResponseValue_intValue_tag;
@@ -230,7 +251,7 @@ void loop() {
         requestStream = pb_istream_from_buffer(buffer, messageLength);
         if (messageType == 1) {
             if(!pb_decode(&requestStream, Request_fields, &request)) {
-                sendErrorResponse("Failed to decode the request");
+                sendErrorResponse(0, "Failed to decode the request");
             } else {
                 handleAPIRequest();
             }
@@ -238,7 +259,7 @@ void loop() {
         #ifdef TEST
         else if (messageType == 2) {
             if(!pb_decode(&requestStream, _TestRequest_fields, &testRequest)) {
-                sendErrorTestResponse("Failed to decode the request");
+                sendErrorTestResponse(0, "Failed to decode the request");
             } else {
                 handleTestRequest();
             }
@@ -248,10 +269,12 @@ void loop() {
         freeRequestBuffer();
         freeResponseBuffer();
     } else if (messageType != 0 && millis() - lastReadTime >= READ_TIMEOUT) {
-        sendErrorResponse("Truncated message received");
+        sendErrorResponse(0, "Truncated message received");
         freeRequestBuffer();
         freeResponseBuffer();
     }
   
     api->managerLoop();
+
+    //TODO: Check RuntimeErrors and send them
 }

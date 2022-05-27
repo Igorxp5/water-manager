@@ -2,7 +2,8 @@ import struct
 import itertools
 
 from protobuf.out.python.api_pb2 import Response
-from test_protobuf.test_pb2 import _TestRequest, _TestResponse
+
+from ..test_protobuf.test_pb2 import _TestRequest, _TestResponse
 
 PACKET_FORMAT = '<BH'
 REQUEST_ID_ITERATOR = itertools.cycle(range(1, 65535))
@@ -73,6 +74,7 @@ def get_pin_value(arduino, pin):
     response = read_response(arduino)
 
     assert isinstance(response, _TestResponse)
+    assert response.id == request.id
     assert response.error == False
 
     return response.message.intValue
@@ -87,6 +89,7 @@ def clear_pins(arduino):
     response = read_response(arduino)
 
     assert isinstance(response, _TestResponse)
+    assert response.id == request.id
     assert response.error == False
 
 def reset_api(arduino):
@@ -99,6 +102,7 @@ def reset_api(arduino):
     response = read_response(arduino)
 
     assert isinstance(response, _TestResponse)
+    assert response.id == request.id
     assert response.error == False
 
 
@@ -112,6 +116,7 @@ def current_free_memory(arduino):
     response = read_response(arduino)
 
     assert isinstance(response, _TestResponse)
+    assert response.id == request.id
     assert response.error == False
 
     return response.message.intValue;
