@@ -14,7 +14,7 @@ async def test_can_answer_multiples_requests(api_client):
     requests = []
 
     for pin in range(2):
-        request = api_client.create_request('createWaterSource', name=f'Registro {pin}', pin=pin)
+        request = api_client.create_request('createWaterSource', name=f'Water source {pin}', pin=pin)
         payload = api_client.build_request_wrapper(request)
         future = await api_client.send_payload(payload, request.id)
         requests.append(future)
@@ -44,7 +44,7 @@ async def test_handle_after_truncated_messages(api_client):
     Platform should be able to drop bytes when an incomplete message arrives.
     Platform should answer "Truncated message received"
     """
-    request = api_client.create_request('createWaterSource', name=f'Registro da Compesa', pin=15)
+    request = api_client.create_request('createWaterSource', name=f'Compesa water source', pin=15)
     payload = api_client.build_request_wrapper(request)
 
     for trunc in range(2, 5):

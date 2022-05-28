@@ -32,8 +32,7 @@ class API
         void removeWaterSource(char* name);
         void removeWaterTank(String name);
         void reset();
-        void managerLoop();
-        unsigned int getError(const RuntimeError** list);
+        void loop();
 
     private:
         Manager* manager = NULL;

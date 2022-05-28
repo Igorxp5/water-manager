@@ -37,7 +37,13 @@ messageType:
 03: Debug messages
 */
 
-byte* buffer;
+#ifdef TEST
+const unsigned int MAX_MESSAGE_SIZE = max(Request_size, _TestRequest_size);
+#else
+const unsigned int MAX_MESSAGE_SIZE = Request_size;
+#endif
+
+byte requestBuffer[Request_size];
 byte responseBuffer[Response_size];
 byte messageType = 0;
 unsigned int read = 0;
@@ -64,8 +70,6 @@ void freeRequestBuffer() {
     messageType = 0;
     messageLength = 0;
     messageLengthBufferReadIndex = 0;
-    free(buffer);
-    buffer = NULL;
 }
 
 void freeResponseBuffer() {
@@ -91,8 +95,8 @@ void sendResponse() {
 }
 
 void sendErrorResponse(unsigned int requestId, const char* error) {
+    response.id = requestId;
     response.has_error = true;
-    response.error = Response_Exception_EXCEPTION;
     response.has_message = true;
     response.message.has_value = true;
     response.message.value.which_content = PrimitiveValue_stringValue_tag;
@@ -100,26 +104,21 @@ void sendErrorResponse(unsigned int requestId, const char* error) {
     sendResponse();
 }
 
-void sendErrorResponse(unsigned int requestId, const RuntimeError* error) {
-    response.has_error = true;
-    response.error = Response_Exception_RUNTIME_ERROR;
-    response.has_message = true;
-    response.message.has_value = true;
-    response.message.value.which_content = PrimitiveValue_stringValue_tag;
+void sendErrorResponse(unsigned int requestId, const Exception* error) {
     const char* message = ((Exception*) error)->getMessage();
-    strcpy(response.message.value.content.stringValue, message);
-    sendResponse();
+    sendErrorResponse(requestId, message);
+}
+
+void sendErrorResponse(unsigned int requestId, const RuntimeError* error) {
+    response.error = Response_Exception_RUNTIME_ERROR;
+    const char* message = ((Exception*) error)->getMessage();
+    sendErrorResponse(requestId, message);
 }
 
 void sendErrorResponse(unsigned int requestId, const InvalidRequest* error) {
-    response.has_error = true;
     response.error = Response_Exception_INVALID_REQUEST;
-    response.has_message = true;
-    response.message.has_value = true;
-    response.message.value.which_content = PrimitiveValue_stringValue_tag;
     const char* message = ((Exception*) error)->getMessage();
-    strcpy(response.message.value.content.stringValue, message);
-    sendResponse();
+    sendErrorResponse(requestId, message);
 }
 
 void sendOkResponse(unsigned int requestId) {
@@ -130,7 +129,6 @@ void sendOkResponse(unsigned int requestId) {
 void handleAPIRequest() {
     if (request.which_message == Request_createWaterSource_tag) {
         api->createWaterSource(request.message.createWaterSource.name, request.message.createWaterSource.pin);
-        sendOkResponse(request.id);
     } else if (request.which_message == Request_getWaterSourceList_tag) {
         char** waterSourceList = api->getWaterSourceList();
         unsigned int totalWaterSources = api->getTotalWaterSources();
@@ -142,8 +140,19 @@ void handleAPIRequest() {
             strcpy(value.content.stringValue, waterSourceList[i]);
             response.message.listValue[i] = value;
         }
-        sendOkResponse(request.id);
         free(waterSourceList);
+    }
+    if (!Exception::hasException()) {
+        sendOkResponse(request.id);
+    } else {
+        Exception* exception = (Exception*) Exception::popException();
+        if (exception->getExceptionType() == RUNTIME_ERROR_EXCEPTION_TYPE) {
+            sendErrorResponse(request.id, (const RuntimeError*) exception);
+        } else if (exception->getExceptionType() == INVALID_REQUEST_EXCEPTION_TYPE) {
+            sendErrorResponse(request.id, (const InvalidRequest*) exception);
+        } else {
+            sendErrorResponse(request.id, (const Exception*) exception);
+        }
     }
 }
 
@@ -228,15 +237,18 @@ void loop() {
     if (apiSerial->available()) {
         if (messageType == 0) {
             messageType = apiSerial->read();
-        } else if (buffer == NULL) {
+        } else if (messageLengthBufferReadIndex < 2) {
             messageLengthBuffer[messageLengthBufferReadIndex] = apiSerial->read();
             messageLengthBufferReadIndex += 1;
             if (messageLengthBufferReadIndex == 2) {
                 messageLength = *((unsigned int*) &messageLengthBuffer);
-                buffer = (byte*) malloc(messageLength);
+                if (messageLength > MAX_MESSAGE_SIZE) {
+                    sendErrorResponse(0, "Invalid message");
+                    freeRequestBuffer();
+                }
             }
         } else if (read < messageLength) {
-            buffer[read] = apiSerial->read();
+            requestBuffer[read] = apiSerial->read();
             read += 1;
         }
         lastReadTime = millis();
@@ -248,7 +260,7 @@ void loop() {
     }
 
     if (read != 0 && read == messageLength) {
-        requestStream = pb_istream_from_buffer(buffer, messageLength);
+        requestStream = pb_istream_from_buffer(requestBuffer, messageLength);
         if (messageType == 1) {
             if(!pb_decode(&requestStream, Request_fields, &request)) {
                 sendErrorResponse(0, "Failed to decode the request");
@@ -274,7 +286,7 @@ void loop() {
         freeResponseBuffer();
     }
   
-    api->managerLoop();
+    api->loop();
 
     //TODO: Check RuntimeErrors and send them
 }

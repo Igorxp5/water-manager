@@ -71,6 +71,9 @@ class APIResponse:
         self.id = id_
         self.message = message
         self.error = error
+    
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.id}, {repr(self.message)}, {repr(self.error)}))'
 
     @staticmethod
     def parse(response_pb):
@@ -234,10 +237,9 @@ class APIClient:
         message_type = message_type[0]
 
         if message_type == 3:
-            data = await reader.read_until()
+            data = await APIClient.stream_read_until(reader)
             LOGGER.debug(data.decode())
-            # Ignore DEBUG messages, wait for next message
-            return await APIClient.read_response(reader)
+            return
 
         message_length = struct.unpack('<H', await reader.readexactly(2))[0]
         raw = await reader.readexactly(message_length)
@@ -250,3 +252,16 @@ class APIClient:
             response = _TestResponse()
             response.ParseFromString(raw)
         return response
+    
+    @staticmethod
+    async def stream_read_until(stream_reader, seperator=b'\n'):
+        separator_buffer = b'\00' * len(seperator)
+        buffer = b''
+        try:
+            while separator_buffer != seperator:
+                byte = await stream_reader.readexactly(1)
+                buffer += byte
+                separator_buffer = separator_buffer[1:] + byte
+        except asyncio.asyncio.IncompleteReadError:
+            pass
+        return buffer

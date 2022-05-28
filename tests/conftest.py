@@ -8,6 +8,7 @@ from _pytest.runner import runtestprotocol
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..')
 PIO_EXECUTABLE = os.environ.get('PIO_EXECUTABLE', 'pio')
+ARDUINO_PORT = os.environ.get('ARDUINO_PORT')
 LOGGER = logging.getLogger(__name__)
 
 os.environ['PYTHONUNBUFFERED'] = '1'
@@ -25,7 +26,7 @@ def pytest_runtest_protocol(item, nextitem):
     return True
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='session')
 def upload_test_environment():
     process = subprocess.Popen([PIO_EXECUTABLE, 'run', '-t', 'upload', '-e', 'test'], cwd=PROJECT_ROOT)
     process.wait()
@@ -46,7 +47,7 @@ async def check_memory_leak(api_client):
 
 @pytest.fixture(scope='session')
 def arduino_connection():
-    yield ArduinoConnection()
+    yield ArduinoConnection(port=ARDUINO_PORT)
 
 
 @pytest.fixture

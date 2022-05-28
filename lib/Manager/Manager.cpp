@@ -13,10 +13,6 @@ OperationMode Manager::getMode() {
     return this->mode;
 }
 
-const RuntimeError** Manager::getErrors() {
-    return this->errors;
-}
-
 WaterTank* Manager::getWaterTank(String name) {
     int waterTankIndex = this->getWaterTankIndex(name);
     if (waterTankIndex == ITEM_NOT_FOUND) {
@@ -49,14 +45,6 @@ unsigned int Manager::getWaterTankNames(String* list) {
     return this->totalWaterTanks;
 }
 
-unsigned int Manager::getErrors(const RuntimeError** list) {
-    list = (const RuntimeError**) realloc(list, this->totalWaterTanks * sizeof(const RuntimeError*));
-    for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
-        list[i] = this->errors[i];
-    }
-    return this->totalWaterTanks;
-}
-
 unsigned int Manager::getTotalWaterSources() {
     return this->totalWaterSources;
 }
@@ -78,13 +66,15 @@ void Manager::setWaterSourceState(char* name, bool enabled) {
 }
 
 void Manager::registerWaterSource(char* name, WaterSource* waterSource) {
-    if (this->getWaterSourceIndex(name) != ITEM_NOT_FOUND) {
-        //throw WATER_SOURCE_ALREADY_REGISTERED;
+    if (this->isWaterSourceRegistered(name)) {
+        return Exception::throwException(WATER_SOURCE_ALREADY_REGISTERED);
+    } else if(this->totalWaterSources + 1 > MAX_WATER_SOURCES) {
+        return Exception::throwException(MAX_WATER_SOURCES_ERROR);
     } else {
         this->totalWaterSources += 1;
 
-        char* waterSourceName = new char[MAX_LENGTH + 1];
-        strncpy(waterSourceName, name, MAX_LENGTH);
+        char* waterSourceName = new char[MAX_NAME_LENGTH + 1];
+        strcpy(waterSourceName, name);
         this->waterSources[this->totalWaterSources - 1] = waterSource;
         this->waterSourceNames[this->totalWaterSources - 1] = waterSourceName;
     }
@@ -93,10 +83,11 @@ void Manager::registerWaterSource(char* name, WaterSource* waterSource) {
 WaterSource* Manager::unregisterWaterSource(char* name) {
     WaterSource* waterSource = NULL;
 
-    int waterSourceIndex = this->getWaterSourceIndex(name);
-    if (waterSourceIndex == ITEM_NOT_FOUND) {
-        //throw WATER_SOURCE_NOT_FOUND;
+    if (!this->isWaterSourceRegistered(name)) {
+        Exception::throwException(WATER_SOURCE_NOT_FOUND);
     } else {
+        int waterSourceIndex = this->getWaterSourceIndex(name);
+
         waterSource = this->waterSources[waterSourceIndex];
         char* waterSourceName = this->waterSourceNames[waterSourceIndex];
 
@@ -110,6 +101,10 @@ WaterSource* Manager::unregisterWaterSource(char* name) {
         delete waterSourceName;
     }
     return waterSource;
+}
+
+bool Manager::isWaterSourceRegistered(char* name) {
+    return this->getWaterSourceIndex(name) != ITEM_NOT_FOUND;
 }
 
 void Manager::registerWaterTank(String name, WaterTank* waterTank) {
@@ -173,10 +168,13 @@ void Manager::loop() {
 }
 
 void Manager::reset() {
-    for (unsigned int i = 0; i < this->totalWaterSources; i++) {
-        delete this->unregisterWaterSource(this->waterSourceNames[i]);
+    unsigned int total = this->totalWaterSources;
+    for (unsigned int i = 0; i < total; i++) {
+        //remove the first water source from the list in each iteration
+        delete this->unregisterWaterSource(this->waterSourceNames[0]);
     }
-    for (unsigned int j = 0; j < this->totalWaterTanks; j++) {
+    total = this->totalWaterTanks;
+    for (unsigned int j = 0; j < total; j++) {
         //TODO
     }
 }

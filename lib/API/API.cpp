@@ -4,6 +4,7 @@
 #include "VolumeReader.h"
 #include "OperationMode.h"
 #include "IOInterface.h"
+#include "Utils.h"
 
 API::API() {
     this->manager = new Manager();
@@ -13,6 +14,10 @@ void API::createWaterSource(char* name, short pin) {
     IOInterface* io = this->getOrCreateIO(pin, DIGITAL, READ_ONLY);
     WaterSource* waterSource = new WaterSource(io);
     this->manager->registerWaterSource(name, waterSource);
+    if (Exception::hasException()) {
+        delete waterSource;
+        IOInterface::remove(pin);
+    }
 }
 
 void API::createWaterSource(char* name, short pin, String waterTankName) {
@@ -112,14 +117,11 @@ void API::removeWaterTank(String name) {
 
 void API::reset() {
     this->manager->reset();
+    IOInterface::removeAll();
 }
 
-void API::managerLoop() {
+void API::loop() {
     this->manager->loop();
-}
-
-unsigned int API::getError(const RuntimeError** list) {
-    return this->manager->getErrors(list);
 }
 
 IOInterface* API::getOrCreateIO(unsigned pin, IOType type, IOMode mode) {
