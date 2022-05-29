@@ -127,6 +127,9 @@ class APIClient:
     def create_water_source(self, name: str, pin: int, water_tank_name: str = None):
         return self.send_request('createWaterSource', name=name, pin=pin, waterTankName=water_tank_name)
 
+    def remove_water_source(self, name: str):
+        return self.send_request('removeWaterSource', waterSourceName=name)
+
     def get_water_source_list(self):
         return self.send_request('getWaterSourceList')
 

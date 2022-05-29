@@ -141,7 +141,10 @@ void handleAPIRequest() {
             response.message.listValue[i] = value;
         }
         free(waterSourceList);
+    } else if (request.which_message == Request_removeWaterSource_tag) {
+        api->removeWaterSource(request.message.createWaterSource.name);
     }
+
     if (!Exception::hasException()) {
         sendOkResponse(request.id);
     } else {

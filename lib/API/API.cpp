@@ -107,7 +107,9 @@ unsigned int API::getTotalWaterSources() {
 
 void API::removeWaterSource(char* name) {
     WaterSource* waterSource = this->manager->unregisterWaterSource(name);
-    delete waterSource;
+    if (waterSource != NULL) {
+        delete waterSource;
+    }
 }
 
 void API::removeWaterTank(String name) {

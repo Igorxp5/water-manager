@@ -92,8 +92,56 @@ async def test_max_length_water_source_name(api_client):
     assert response.message == 'Failed to decode the request'
 
 
-# TODO: Test memory deallocation when removing a water source
+async def test_remove_water_source(api_client):
+    """Platform should be able to remove a water source created before.
+    After removing it the memory allocated in RAM for it, it should be deallocated
+    """
+    name, pin = 'Compesa water source', 15
+    await api_client.create_water_source(name, pin)
 
-# TODO: Create a water source associated to a water tank
+    water_sources = await api_client.get_water_source_list()
+    
+    assert water_sources == [name]
 
-# TODO: Cannot delete a water source with a water tank referencing it
+    await api_client.remove_water_source(name)
+
+    water_sources = await api_client.get_water_source_list()
+
+    assert not water_sources
+
+    allocated_memory = await api_client.get_memory_free()
+
+    await api_client.create_water_source(name, pin)
+
+    water_sources = await api_client.get_water_source_list()
+    
+    assert water_sources == [name]
+
+    await api_client.remove_water_source(name)
+
+    water_sources = await api_client.get_water_source_list()
+
+    assert not water_sources
+
+    assert await api_client.get_memory_free() <= allocated_memory, 'Memory leak found while removing a water source'
+
+
+async def test_remove_water_source_keep_ios(api_client):
+    """Platform should keep IOs created for the water source when removing it"""
+    name, pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(name, pin)
+
+    await api_client.remove_water_source(name)
+
+    await api_client.get_io_value(pin=pin)
+
+
+def test_create_water_source_with_water_tank(api_client):
+    """Platform should be able create a water source using a water tank as sources"""
+    raise NotImplementedError
+
+
+def test_remove_water_source_associated_to_water_tank(api_client):
+    """Platform should not allow to remove a water source of a water tank"""
+    raise NotImplementedError
