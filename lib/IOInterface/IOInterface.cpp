@@ -77,12 +77,20 @@ unsigned int AnalogicIO::read() {
 	return analogRead(this->pin);
 }
 
+unsigned int AnalogicIO::getPin() {
+	return this->pin;
+}
+
 DigitalIO::DigitalIO(unsigned int pin, IOMode mode) : IOInterface(pin, mode) {
 	pinMode(pin, (mode == READ_ONLY) ? INPUT : OUTPUT);
 }
 
 unsigned int DigitalIO::read() {
 	return (unsigned int) digitalRead(this->pin);
+}
+
+unsigned int DigitalIO::getPin() {
+	return this->pin;
 }
 
 void DigitalIO::write(unsigned int w) {
@@ -96,6 +104,10 @@ TestIO::TestIO(unsigned int pin) : IOInterface(pin, READ_WRITE) {
 
 unsigned int TestIO::read() {
 	return this->value;
+}
+
+unsigned int TestIO::getPin() {
+	return this->pin;
 }
 
 void TestIO::write(unsigned int w) {

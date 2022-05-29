@@ -16,6 +16,7 @@ class IOInterface
 
         virtual unsigned int read() = 0;
         virtual void write(unsigned int w) = 0;
+        virtual unsigned int getPin() = 0;
 
         static IOInterface* get(unsigned int pin);
         static void remove(unsigned int pin);
@@ -39,6 +40,7 @@ class DigitalIO: public IOInterface
 
         unsigned int read();
         void write(unsigned int w);
+        unsigned int getPin();
 };
 
 class AnalogicIO: public IOInterface
@@ -48,6 +50,7 @@ class AnalogicIO: public IOInterface
 
         unsigned int read();
         void write(unsigned int w);
+        unsigned int getPin();
 };
 
 #ifdef TEST
@@ -59,6 +62,7 @@ class TestIO: public IOInterface
         unsigned int value = 0; 
         unsigned int read();
         void write(unsigned int w);
+        unsigned int getPin();
 };
 #endif
 #endif

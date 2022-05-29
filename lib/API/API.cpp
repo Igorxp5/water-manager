@@ -96,9 +96,8 @@ float API::getWaterTankPressure(String name) {
     return waterTank->getPressure();
 }
 
-bool API::getWaterSourceState(char* name) {
-    WaterSource* waterSource = this->manager->getWaterSource(name);
-    return waterSource->isEnabled();
+WaterSource* API::getWaterSource(char* name) {
+    return this->manager->getWaterSource(name);
 }
 
 unsigned int API::getTotalWaterSources() {

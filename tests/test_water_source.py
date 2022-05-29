@@ -8,7 +8,7 @@ from protobuf.out.python.api_pb2 import Request, Response
 
 
 async def test_create_water_source(api_client):
-    """Platform should be able to create a water source"""
+    """Platform should be able to create a water source and get the list of created water sources"""
     await api_client.create_water_source('Compesa water source', 15)
     
     water_sources = await api_client.get_water_source_list()
@@ -137,7 +137,7 @@ async def test_remove_water_source_keep_ios(api_client):
     await api_client.get_io_value(pin=pin)
 
 
-def test_create_water_source_with_water_tank(api_client):
+def test_create_water_source_with_water_tank_source(api_client):
     """Platform should be able create a water source using a water tank as sources"""
     raise NotImplementedError
 
@@ -145,3 +145,30 @@ def test_create_water_source_with_water_tank(api_client):
 def test_remove_water_source_associated_to_water_tank(api_client):
     """Platform should not allow to remove a water source of a water tank"""
     raise NotImplementedError
+
+
+async def test_get_water_source(api_client):
+    """Platform should be able to get a water source registered"""
+    name, pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(name, pin)
+
+    water_source = await api_client.get_water_source(name)
+
+    assert water_source['name'] == name
+    assert water_source['pin'] == pin
+    assert water_source['enabled'] == False
+    assert not water_source['sourceWaterTank']
+
+
+async def test_get_invalid_water_source(api_client):
+    """Platform should respond with an error when trying to get a invalid water source"""
+    name = 'Compesa water source'
+    error_message = 'Could not find a water source with the name provided'
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.get_water_source(name)
+
+    response = exc_info.value.response
+    assert response.error is APIInvalidRequest
+    assert response.message == error_message

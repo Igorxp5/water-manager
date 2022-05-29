@@ -70,13 +70,14 @@ void freeRequestBuffer() {
     messageType = 0;
     messageLength = 0;
     messageLengthBufferReadIndex = 0;
+    request = {};
 }
 
 void freeResponseBuffer() {
-    response = Response_init_zero;
+    response = {};
 
     #ifdef TEST
-    testResponse = _TestResponse_init_zero;
+    testResponse = {};
     #endif
 }
 
@@ -143,6 +144,18 @@ void handleAPIRequest() {
         free(waterSourceList);
     } else if (request.which_message == Request_removeWaterSource_tag) {
         api->removeWaterSource(request.message.createWaterSource.name);
+    } else if (request.which_message == Request_getWaterSource_tag) {
+        WaterSource* waterSource = api->getWaterSource(request.message.createWaterSource.name);
+        if (waterSource != NULL) {
+            response.has_message = true;
+            response.message.has_waterSource = true;
+            WaterSourceState waterSourceState = WaterSourceState_init_zero;
+            strcpy(waterSourceState.name, request.message.createWaterSource.name);
+            waterSourceState.pin = waterSource->getPin();
+            waterSourceState.enabled = waterSource->isEnabled();
+            response.message.waterSource = waterSourceState;
+            //TODO: Get water tank name
+        }
     }
 
     if (!Exception::hasException()) {

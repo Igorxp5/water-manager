@@ -5,6 +5,8 @@ import asyncio
 import logging
 import itertools
 
+from typing import Dict, Type
+
 from serial.tools.list_ports import comports
 from serial_asyncio import open_serial_connection
 from google.protobuf.pyext._message import RepeatedCompositeContainer
@@ -64,8 +66,47 @@ class APIRuntimeError(APIException):
     pass
 
 
+class APIResponseMessageParser:
+
+    def parse(raw_field):
+        raise NotImplementedError
+
+
+class GetFirstFieldParser(APIResponseMessageParser):
+    @staticmethod
+    def parse(raw_field):
+        list_fields = raw_field.ListFields()
+        field_value = raw_field
+        if len(list_fields):
+            _, field_value = APIResponse.parse_field(list_fields[0])
+        else:
+            field_value = None
+        return field_value
+
+
+class WaterSourceStateParser(APIResponseMessageParser):
+    @staticmethod
+    def parse(raw_field):
+        field = APIResponse.parse_dict_field(raw_field)
+        field.setdefault('enabled', False)
+        field.setdefault('sourceWaterTank', None)
+        return field
+
+
 class APIResponse:
-    ERROR_EXCEPTIONS = {'True': APIException, '0': APIException, '1': APIRuntimeError, '2': APIInvalidRequest}
+    ERROR_EXCEPTIONS: Dict[str, Type[APIException]] = {
+        'True': APIException,
+        '0': APIException,
+        '1': APIRuntimeError,
+        '2': APIInvalidRequest
+    }
+    GET_FIRST_FIELD_PARSER: APIResponseMessageParser = GetFirstFieldParser()
+    MESSAGE_PARSERS: Dict[str, APIResponseMessageParser] = {
+        '_TestResponseValue': GET_FIRST_FIELD_PARSER,
+        'PrimitiveValue': GET_FIRST_FIELD_PARSER,
+        'Value': GET_FIRST_FIELD_PARSER,
+        'WaterSourceState': WaterSourceStateParser()
+    }
 
     def __init__(self, id_: int, message: str, error: APIException = None):
         self.id = id_
@@ -77,16 +118,13 @@ class APIResponse:
 
     @staticmethod
     def parse(response_pb):
-        fields = dict()
-        for field in response_pb.ListFields():
-            field_name, field_value = APIResponse.parse_field(field)
-            fields[field_name] = field_value
+        fields = APIResponse.parse_dict_field(response_pb)
         id_ = fields.get('id', 0)
         message = fields.get('message', '')
         error = fields.get('error', None)
         error = APIResponse.ERROR_EXCEPTIONS.get(str(error))
         return APIResponse(id_, message, error)
-
+    
     @staticmethod
     def parse_field(raw_field):
         field_descriptor, field_value = raw_field
@@ -94,13 +132,19 @@ class APIResponse:
         field_message_type = field_descriptor.message_type
         if isinstance(field_value, RepeatedCompositeContainer):
             field_value = [APIResponse.parse_field(field_value[i].ListFields()[0])[1] for i in range(len(field_value))]
-        elif field_message_type and field_message_type.name in ('_TestResponseValue', 'PrimitiveValue', 'Value'):
-            list_fields = field_value.ListFields()
-            if len(list_fields):
-                _, field_value = APIResponse.parse_field(field_value.ListFields()[0])
-            else:
-                field_value = None
+        elif field_message_type and field_message_type.name:
+            parser = APIResponse.MESSAGE_PARSERS.get(field_message_type.name)
+            if parser:
+                field_value = parser.parse(field_value)
         return field_name, field_value
+
+    @staticmethod
+    def parse_dict_field(raw_field):
+        fields = dict()
+        for field in raw_field.ListFields():
+            field_name, field_value = APIResponse.parse_field(field)
+            fields[field_name] = field_value
+        return fields
 
 
 class APIClient:
@@ -132,6 +176,9 @@ class APIClient:
 
     def get_water_source_list(self):
         return self.send_request('getWaterSourceList')
+    
+    def get_water_source(self, name: str):
+        return self.send_request('getWaterSource', waterSourceName=name)
 
     def create_io(self, pin: int):
         return self.send_request('createIO', pin=pin, request_class=_TestRequest)

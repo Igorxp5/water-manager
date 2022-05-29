@@ -22,11 +22,14 @@ WaterTank* Manager::getWaterTank(String name) {
 }
 
 WaterSource* Manager::getWaterSource(char* name) {
+    WaterSource* waterSource = NULL;
     int waterSourceIndex = this->getWaterSourceIndex(name);
     if (waterSourceIndex == ITEM_NOT_FOUND) {
-        //throw WATER_SOURCE_NOT_FOUND;
+        Exception::throwException(WATER_SOURCE_NOT_FOUND);
+    } else {
+        waterSource = this->waterSources[waterSourceIndex];
     }
-    return this->waterSources[waterSourceIndex];
+    return waterSource;
 }
 
 char** Manager::getWaterSourceNames() {

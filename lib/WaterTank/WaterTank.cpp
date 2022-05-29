@@ -108,5 +108,9 @@ void WaterSource::disable() {
 }
 
 bool WaterSource::isEnabled() {
-    return this->enabled;
+    return this->io->read() == 1;
+}
+
+unsigned int WaterSource::getPin() {
+    return this->io->getPin();
 }

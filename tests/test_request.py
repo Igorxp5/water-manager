@@ -58,7 +58,9 @@ async def test_handle_after_truncated_messages(api_client):
         assert response.error is APIException
         assert response.message == 'Truncated message received'
 
-    assert not await api_client.get_water_source_list()
+    water_sources = await api_client.get_water_source_list()
+
+    assert not water_sources
 
 
 # TODO: Program should not crash due a large request

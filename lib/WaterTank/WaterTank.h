@@ -48,10 +48,10 @@ class WaterSource
         void enable(bool force=false);
         void disable();
         bool isEnabled();
+        unsigned int getPin();
 
     private:
         IOInterface* io;
-        bool enabled;
 };
 
 #endif

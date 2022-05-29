@@ -23,11 +23,11 @@ class API
         void setManualMode();
         void enableWaterSource(char* name);
         void disableWaterSource(char* name);
+        WaterSource* getWaterSource(char* name);
         char** getWaterSourceList();
         unsigned int getWaterTankList(String* list);
         float getWaterTankVolume(String name);
         float getWaterTankPressure(String name);
-        bool getWaterSourceState(char* name);
         unsigned int getTotalWaterSources();
         void removeWaterSource(char* name);
         void removeWaterTank(String name);
