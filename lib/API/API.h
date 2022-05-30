@@ -19,10 +19,9 @@ class API
         void setWaterTankMinimumVolume(String name, float minimum);
         void setWaterTankMaxVolume(String name, float max);
         void setWaterZeroVolume(String name, float pressure);
-        void setAutomaticMode();
-        void setManualMode();
-        void enableWaterSource(char* name);
-        void disableWaterSource(char* name);
+        void setOperationMode(byte mode);
+        byte getOperationMode();
+        void setWaterSource(char* name, bool enabled);
         WaterSource* getWaterSource(char* name);
         char** getWaterSourceList();
         unsigned int getWaterTankList(String* list);

@@ -1,10 +1,11 @@
 import asyncio
+import logging
 
 import pytest
 
-from .lib.api import APIException, APIInvalidRequest
+from .lib.api.exceptions import APIException, APIInvalidRequest
 
-from protobuf.out.python.api_pb2 import Request, Response
+LOGGER = logging.getLogger(__name__)
 
 
 async def test_create_water_source(api_client):
@@ -21,7 +22,11 @@ async def test_max_water_sources(api_client):
     expected_water_sources = [(f'Water source {i}', i) for i in range(1, 11)]
 
     for name, pin in expected_water_sources:
+        free_memory = await api_client.get_free_memory()
+        LOGGER.debug(f'Create a water source: {name}...')
+        LOGGER.debug(f'Current free memory: {free_memory} bytes')
         await api_client.create_water_source(name, pin)
+        assert free_memory > 500
     
     water_sources = await api_client.get_water_source_list()
     
@@ -51,9 +56,13 @@ async def test_create_already_registered_water_source(api_client):
 
     assert water_sources == expected_water_sources
 
+    LOGGER.debug(f'Free memory: {await api_client.get_free_memory()} bytes!')
+
     # with the same pin
     with pytest.raises(APIInvalidRequest) as exc_info:
         await api_client.create_water_source(water_source_name, 15)
+
+    LOGGER.debug(f'Free memory: {await api_client.get_free_memory()} bytes!')
 
     response = exc_info.value.response
     assert response.error is APIInvalidRequest
@@ -93,7 +102,8 @@ async def test_max_length_water_source_name(api_client):
 
 
 async def test_remove_water_source(api_client):
-    """Platform should be able to remove a water source created before.
+    """
+    Platform should be able to remove a water source created before.
     After removing it the memory allocated in RAM for it, it should be deallocated
     """
     name, pin = 'Compesa water source', 15
@@ -107,9 +117,9 @@ async def test_remove_water_source(api_client):
 
     water_sources = await api_client.get_water_source_list()
 
-    assert not water_sources
+    assert water_sources == []
 
-    allocated_memory = await api_client.get_memory_free()
+    allocated_memory = await api_client.get_free_memory()
 
     await api_client.create_water_source(name, pin)
 
@@ -121,9 +131,9 @@ async def test_remove_water_source(api_client):
 
     water_sources = await api_client.get_water_source_list()
 
-    assert not water_sources
+    assert water_sources == []
 
-    assert await api_client.get_memory_free() <= allocated_memory, 'Memory leak found while removing a water source'
+    assert await api_client.get_free_memory() <= allocated_memory, 'Memory leak found while removing a water source'
 
 
 async def test_remove_water_source_keep_ios(api_client):
@@ -137,11 +147,13 @@ async def test_remove_water_source_keep_ios(api_client):
     await api_client.get_io_value(pin=pin)
 
 
+@pytest.mark.xfail
 def test_create_water_source_with_water_tank_source(api_client):
     """Platform should be able create a water source using a water tank as sources"""
     raise NotImplementedError
 
 
+@pytest.mark.xfail
 def test_remove_water_source_associated_to_water_tank(api_client):
     """Platform should not allow to remove a water source of a water tank"""
     raise NotImplementedError
@@ -172,3 +184,15 @@ async def test_get_invalid_water_source(api_client):
     response = exc_info.value.response
     assert response.error is APIInvalidRequest
     assert response.message == error_message
+
+
+@pytest.mark.xfail
+async def test_set_water_source_state_manual_mode(api_client):
+    """Platform should allow to set turn on/off water sources when it's in manual mode"""
+    raise NotImplementedError
+
+
+@pytest.mark.xfail
+async def test_set_water_source_state_auto_mode(api_client):
+    """Platform should not allow to turn on/off water sources when it's in auto mode"""
+    raise NotImplementedError

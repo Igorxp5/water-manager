@@ -27,10 +27,11 @@ PB_BIND(_TestGetIOValue, _TestGetIOValue, AUTO)
 PB_BIND(_TestClearIOS, _TestClearIOS, AUTO)
 
 
-PB_BIND(_TestMemoryFree, _TestMemoryFree, AUTO)
+PB_BIND(_TestFreeMemory, _TestFreeMemory, AUTO)
 
 
 PB_BIND(_TestResetAPI, _TestResetAPI, AUTO)
+
 
 
 

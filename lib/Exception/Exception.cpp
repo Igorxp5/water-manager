@@ -21,7 +21,7 @@ const InvalidRequest* WATER_SOURCE_NOT_FOUND = new InvalidRequest(
 const InvalidRequest* WATER_SOURCE_ALREADY_REGISTERED = new InvalidRequest(
     "There is already a water source with that name registered");
 
-const InvalidRequest* CANNOT_HANDLE_WATER_SOURCE_IN_AUTOMATIC = new InvalidRequest(
+const InvalidRequest* CANNOT_HANDLE_WATER_SOURCE_IN_AUTO = new InvalidRequest(
     "Cannot handle a water source in auto mode");
 
 const InvalidRequest* CANNOT_ENABLE_WATER_SOURCE_DUE_MINIMUM_VOLUME = new InvalidRequest(
@@ -32,6 +32,8 @@ const InvalidRequest* CANNOT_FILL_WATER_TANK_MAX_VOLUME = new InvalidRequest(
 
 const InvalidRequest* MAX_WATER_SOURCES_ERROR = new InvalidRequest("Max of water sources reached");
 const InvalidRequest* MAX_WATER_TANKS_ERROR = new InvalidRequest("Max of water tanks reached");
+
+const InvalidRequest* INVALID_OPERATION_MODE = new InvalidRequest("Invalid operation mode");
 
 Exception::Exception(const char* message, unsigned int exceptionType) {
     this->message = message;
@@ -52,6 +54,10 @@ const char* Exception::getMessage() {
 
 void Exception::throwException(const Exception* exception) {
 	Exception::thrownException = exception;
+}
+
+void Exception::clearException() {
+    Exception::thrownException = NULL;
 }
 
 const Exception* Exception::popException() {

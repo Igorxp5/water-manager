@@ -1,150 +1,23 @@
-import time
-import serial
 import struct
 import asyncio
 import logging
 import itertools
+import collections
 
-from typing import Dict, Type
-
-from serial.tools.list_ports import comports
-from serial_asyncio import open_serial_connection
-from google.protobuf.pyext._message import RepeatedCompositeContainer
+from typing import Dict
 
 from protobuf.out.python.api_pb2 import Request, Response
 
-from . import utils
+from .models import OperationMode, IOType
+from .response import APIResponse
 from .volatile_queue import VolatileQueue
-from ..test_protobuf.test_pb2 import _TestRequest, _TestResponse
+from ...test_protobuf.test_pb2 import _TestRequest, _TestResponse
 
 PACKET_FORMAT = '<BH'
 LOGGER = logging.getLogger(__name__)
 
 
-class ArduinoNotFound(RuntimeError):
-    pass
-
-
-class ArduinoConnection:
-    def __init__(self, port: int = None, baudrate: int = 9600):
-        try:
-            self.port = port or ArduinoConnection.available_comports()[0]
-        except IndexError:
-            raise ArduinoNotFound
-        self.baudrate = baudrate
-        self.transport = None
-
-    async def open(self, loop=None):
-        if not self.transport:
-            self.transport = await open_serial_connection(url=self.port, baudrate=self.baudrate, loop=loop)
-            await asyncio.sleep(3)
-        reader, writer = self.transport
-        return reader, writer
-
-    async def close(self):
-        if self.transport and not self.transport[1].is_closing():
-            self.transport[1].close()
-            await self.transport[1].wait_closed()
-        self.transport = None
-
-    @staticmethod
-    def available_comports():
-        return [com.name for com in comports()]
-
-
-class APIException(RuntimeError):
-    def __init__(self, message, response=None):
-        self.response = response
-        super().__init__(message)
-
-
-class APIInvalidRequest(APIException):
-    pass
-
-
-class APIRuntimeError(APIException):
-    pass
-
-
-class APIResponseMessageParser:
-
-    def parse(raw_field):
-        raise NotImplementedError
-
-
-class GetFirstFieldParser(APIResponseMessageParser):
-    @staticmethod
-    def parse(raw_field):
-        list_fields = raw_field.ListFields()
-        field_value = raw_field
-        if len(list_fields):
-            _, field_value = APIResponse.parse_field(list_fields[0])
-        else:
-            field_value = None
-        return field_value
-
-
-class WaterSourceStateParser(APIResponseMessageParser):
-    @staticmethod
-    def parse(raw_field):
-        field = APIResponse.parse_dict_field(raw_field)
-        field.setdefault('enabled', False)
-        field.setdefault('sourceWaterTank', None)
-        return field
-
-
-class APIResponse:
-    ERROR_EXCEPTIONS: Dict[str, Type[APIException]] = {
-        'True': APIException,
-        '0': APIException,
-        '1': APIRuntimeError,
-        '2': APIInvalidRequest
-    }
-    GET_FIRST_FIELD_PARSER: APIResponseMessageParser = GetFirstFieldParser()
-    MESSAGE_PARSERS: Dict[str, APIResponseMessageParser] = {
-        '_TestResponseValue': GET_FIRST_FIELD_PARSER,
-        'PrimitiveValue': GET_FIRST_FIELD_PARSER,
-        'Value': GET_FIRST_FIELD_PARSER,
-        'WaterSourceState': WaterSourceStateParser()
-    }
-
-    def __init__(self, id_: int, message: str, error: APIException = None):
-        self.id = id_
-        self.message = message
-        self.error = error
-    
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self.id}, {repr(self.message)}, {repr(self.error)}))'
-
-    @staticmethod
-    def parse(response_pb):
-        fields = APIResponse.parse_dict_field(response_pb)
-        id_ = fields.get('id', 0)
-        message = fields.get('message', '')
-        error = fields.get('error', None)
-        error = APIResponse.ERROR_EXCEPTIONS.get(str(error))
-        return APIResponse(id_, message, error)
-    
-    @staticmethod
-    def parse_field(raw_field):
-        field_descriptor, field_value = raw_field
-        field_name = field_descriptor.name
-        field_message_type = field_descriptor.message_type
-        if isinstance(field_value, RepeatedCompositeContainer):
-            field_value = [APIResponse.parse_field(field_value[i].ListFields()[0])[1] for i in range(len(field_value))]
-        elif field_message_type and field_message_type.name:
-            parser = APIResponse.MESSAGE_PARSERS.get(field_message_type.name)
-            if parser:
-                field_value = parser.parse(field_value)
-        return field_name, field_value
-
-    @staticmethod
-    def parse_dict_field(raw_field):
-        fields = dict()
-        for field in raw_field.ListFields():
-            field_name, field_value = APIResponse.parse_field(field)
-            fields[field_name] = field_value
-        return fields
+FutureResponse = collections.namedtuple('FutureResponse', ['future', 'response_type'])
 
 
 class APIClient:
@@ -154,7 +27,7 @@ class APIClient:
 
     def __init__(self, arduino_connection, event_loop: asyncio.ProactorEventLoop = None, timeout=DEFAULT_REQUEST_TIMEOUT):
         self._arduino_connection = arduino_connection
-        self._future_responses = dict()
+        self._future_responses: Dict[FutureResponse] = dict()
         self._event_loop = event_loop or asyncio.get_event_loop()
 
         self._read_responses_task = self._event_loop.create_task(self._read_responses_routine())
@@ -175,25 +48,33 @@ class APIClient:
         return self.send_request('removeWaterSource', waterSourceName=name)
 
     def get_water_source_list(self):
-        return self.send_request('getWaterSourceList')
+        return self.send_request('getWaterSourceList', response_type=list)
     
     def get_water_source(self, name: str):
         return self.send_request('getWaterSource', waterSourceName=name)
 
-    def create_io(self, pin: int):
-        return self.send_request('createIO', pin=pin, request_class=_TestRequest)
+    def set_operation_mode(self, mode: OperationMode):
+        return self.send_request('setMode', mode=mode.value)
+    
+    def get_operation_mode(self):
+        def _operation_mode_factory(value=0):
+            return OperationMode(value) if value else OperationMode.MANUAL
+        return self.send_request('getMode', response_type=_operation_mode_factory)
+
+    def create_io(self, pin: int, type_: IOType=IOType.DIGITAL):
+        return self.send_request('createIO', pin=pin, type=type_.value, request_class=_TestRequest)
 
     def set_io_value(self, pin: int, value: int):
         return self.send_request('setIOValue', pin=pin, value=value, request_class=_TestRequest)
 
     def get_io_value(self, pin: int):
-        return self.send_request('getIOValue', pin=pin, request_class=_TestRequest)
+        return self.send_request('getIOValue', pin=pin, request_class=_TestRequest, response_type=int)
 
     def clear_io(self):
         return self.send_request('clearIOs', request_class=_TestRequest)
 
-    def get_memory_free(self):
-        return self.send_request('memoryFree', request_class=_TestRequest)
+    def get_free_memory(self):
+        return self.send_request('freeMemory', request_class=_TestRequest, response_type=int)
 
     def reset(self):
         return self.send_request('resetAPI', request_class=_TestRequest)
@@ -202,10 +83,13 @@ class APIClient:
         self._timeout = timeout
 
     def close(self):
-        tasks = itertools.chain(self._timeout_tasks, self._future_responses.values(), (self._read_responses_task,))
+        tasks = itertools.chain(self._timeout_tasks, (self._read_responses_task,))
         for task in tasks:
             if not task.done():
                 task.cancel()
+        for future, _ in self._future_responses.values():
+            if not future.done():
+                future.cancel()
         if not self._event_loop.is_closed():
             self._event_loop.run_until_complete(self._arduino_connection.close())
 
@@ -219,10 +103,14 @@ class APIClient:
             raw_response = await self.read_response()
             if raw_response:
                 response = APIResponse.parse(raw_response)
-                future = self._future_responses.get(response.id)
-                if future is not None:
+                future_response = self._future_responses.get(response.id)
+                if future_response is not None:
+                    future, response_type = future_response
                     if not response.error:
-                        future.set_result(response.message)
+                        message = response.message
+                        if response_type:
+                            message = response_type(message) if message else response_type()
+                        future.set_result(message)
                     else:
                         exc = response.error(response.message, response)
                         future.set_exception(exc)
@@ -234,7 +122,7 @@ class APIClient:
                     await self._unmapped_error_responses.put(response)
 
     async def _request_timeout_routine(self, request_id, timeout):
-        future = self._future_responses[request_id]
+        future, _ = self._future_responses[request_id]
         try:
             await asyncio.wait_for(future, timeout)
         except asyncio.TimeoutError:
@@ -244,18 +132,18 @@ class APIClient:
         if request_id in self._future_responses:
             del self._future_responses[request_id]
 
-    async def send_request(self, command, request_id=None, **params):
+    async def send_request(self, command, request_id=None, response_type=None, **params):
         request = self.create_request(command=command, request_id=request_id, **params)
         payload = self.build_request_wrapper(request)
-        future = await self.send_payload(payload, request.id)
+        future = await self.send_payload(payload, request.id, response_type=response_type)
         return await future
 
-    async def send_payload(self, payload, request_id=None):
+    async def send_payload(self, payload, request_id=None, response_type=None):
         _, writer = await self._open_stream_task
         writer.write(payload)
         await writer.drain()
         future = asyncio.Future()
-        self._future_responses[request_id] = future
+        self._future_responses[request_id] = FutureResponse(future, response_type)
         if self._timeout:
             timeout_routine = self._event_loop.create_task(self._request_timeout_routine(request_id, self._timeout))
             self._timeout_tasks.append(timeout_routine)

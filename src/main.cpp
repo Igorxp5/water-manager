@@ -156,6 +156,16 @@ void handleAPIRequest() {
             response.message.waterSource = waterSourceState;
             //TODO: Get water tank name
         }
+    } else if (request.which_message == Request_setMode_tag) {
+        api->setOperationMode(request.message.setMode.mode);
+    } else if (request.which_message == Request_getMode_tag) {
+        byte mode = api->getOperationMode();
+        if (!Exception::hasException()) {
+            response.has_message = true;
+            response.message.has_value = true;
+            response.message.value.which_content = PrimitiveValue_intValue_tag;
+            response.message.value.content.intValue = mode;
+        }
     }
 
     if (!Exception::hasException()) {
@@ -213,7 +223,13 @@ void handleTestRequest() {
     if (testRequest.which_message == _TestRequest_createIO_tag) {
         IOInterface* io = IOInterface::get(testRequest.message.createIO.pin);
         if (io == NULL) {
-            io = new TestIO(testRequest.message.createIO.pin);    
+            IOType type;
+            if (testRequest.message.createIO.type == _TestCreateIO_IOType_DIGITAL) {
+                type = DIGITAL;
+            } else if (testRequest.message.createIO.type == _TestCreateIO_IOType_ANALOGIC) {
+                type = ANALOGIC;
+            }
+            io = new IOInterface(testRequest.message.createIO.pin, READ_WRITE, type);
             sendOkTestResponse(testRequest.id);
         } else {
             sendErrorTestResponse(testRequest.id, "TestIO already set with that pin");
@@ -239,11 +255,10 @@ void handleTestRequest() {
     } else if (testRequest.which_message == _TestRequest_clearIOs_tag) {
         IOInterface::removeAll();
         sendOkTestResponse(testRequest.id);
-    } else if (testRequest.which_message == _TestRequest_memoryFree_tag) {
+    } else if (testRequest.which_message == _TestRequest_freeMemory_tag) {
         sendOkTestResponse(testRequest.id, freeMemory());
     } else if (testRequest.which_message == _TestRequest_resetAPI_tag) {
         api->reset();
-        IOInterface::removeAll();
         sendOkTestResponse(testRequest.id);
     }
 }
@@ -293,6 +308,9 @@ void loop() {
             }
         }
         #endif
+        else {
+            sendErrorResponse(0, "Invalid message type");
+        }
 
         freeRequestBuffer();
         freeResponseBuffer();

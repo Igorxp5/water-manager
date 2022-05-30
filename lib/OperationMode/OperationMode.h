@@ -2,7 +2,7 @@
 #define OPERATION_MODE_H
 
 enum OperationMode {
-    AUTOMATIC, MANUAL
+    MANUAL, AUTO
 };
 
 #endif

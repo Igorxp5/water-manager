@@ -11,13 +11,12 @@ API::API() {
 }
 
 void API::createWaterSource(char* name, short pin) {
+    if (this->manager->isWaterSourceRegistered(name)) {
+        return Exception::throwException(WATER_SOURCE_ALREADY_REGISTERED);
+    }
     IOInterface* io = this->getOrCreateIO(pin, DIGITAL, READ_ONLY);
     WaterSource* waterSource = new WaterSource(io);
     this->manager->registerWaterSource(name, waterSource);
-    if (Exception::hasException()) {
-        delete waterSource;
-        IOInterface::remove(pin);
-    }
 }
 
 void API::createWaterSource(char* name, short pin, String waterTankName) {
@@ -60,22 +59,22 @@ void API::setWaterZeroVolume(String name, float pressure) {
     waterTank->setZeroVolume(pressure);
 }
 
-void API::setAutomaticMode() {
-    OperationMode mode = AUTOMATIC;
-    this->manager->setOperationMode(mode);
+void API::setOperationMode(byte mode) {
+    if (mode == 0) {
+        this->manager->setOperationMode(MANUAL);
+    } else if (mode == 1) {
+        this->manager->setOperationMode(AUTO);
+    } else {
+        Exception::throwException(INVALID_OPERATION_MODE);
+    }
 }
 
-void API::setManualMode() {
-    OperationMode mode = MANUAL;
-    this->manager->setOperationMode(mode);
+byte API::getOperationMode() {
+    return (byte) this->manager->getOperationMode();
 }
 
-void API::enableWaterSource(char* name) {
-    this->manager->setWaterSourceState(name, true);
-}
-
-void API::disableWaterSource(char* name) {
-    this->manager->setWaterSourceState(name, false);
+void API::setWaterSource(char* name, bool enabled) {
+    this->manager->setWaterSourceState(name, enabled);
 }
 
 char** API::getWaterSourceList() {
@@ -118,7 +117,6 @@ void API::removeWaterTank(String name) {
 
 void API::reset() {
     this->manager->reset();
-    IOInterface::removeAll();
 }
 
 void API::loop() {
@@ -128,15 +126,7 @@ void API::loop() {
 IOInterface* API::getOrCreateIO(unsigned pin, IOType type, IOMode mode) {
     IOInterface* io = IOInterface::get(pin);
     if (io == NULL) {
-        #ifdef TEST
-            io = new TestIO(pin);
-        #else
-        if (type == DIGITAL) {
-            io = new DigitalIO(pin, mode);
-        } else {
-            io = new AnalogicIO(pin, mode);
-        }
-        #endif
+        io = new IOInterface(pin, mode, type);
     }
     return io;
 }

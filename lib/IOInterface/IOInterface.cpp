@@ -9,9 +9,14 @@ IOInterface** IOInterface::ios = NULL;
 unsigned int* IOInterface::ioPins = NULL;
 unsigned int IOInterface::totalIos = 0;
 
-IOInterface::IOInterface(unsigned int pin, IOMode mode) {
+IOInterface::IOInterface(unsigned int pin, IOMode mode, IOType type) {
     this->pin = pin;
     this->mode = mode;
+	this->type = type;
+
+	#ifndef TEST
+	pinMode(pin, (mode == READ_ONLY) ? INPUT : OUTPUT);
+	#endif
 
 	int ioIndex = IOInterface::getIndex(pin);
 	if (ioIndex != ITEM_NOT_FOUND) {
@@ -54,6 +59,7 @@ void IOInterface::remove(unsigned int pin) {
 
 }
 
+
 void IOInterface::removeAll() {
 	while (IOInterface::totalIos > 0) {
 		IOInterface::remove(IOInterface::ioPins[0]);
@@ -69,48 +75,31 @@ int IOInterface::getIndex(unsigned int pin) {
     return ITEM_NOT_FOUND;
 }
 
-AnalogicIO::AnalogicIO(unsigned int pin, IOMode mode) : IOInterface(pin, mode) {
-	pinMode(pin, (mode == READ_ONLY) ? INPUT : OUTPUT);
-}
-
-unsigned int AnalogicIO::read() {
-	return analogRead(this->pin);
-}
-
-unsigned int AnalogicIO::getPin() {
-	return this->pin;
-}
-
-DigitalIO::DigitalIO(unsigned int pin, IOMode mode) : IOInterface(pin, mode) {
-	pinMode(pin, (mode == READ_ONLY) ? INPUT : OUTPUT);
-}
-
-unsigned int DigitalIO::read() {
-	return (unsigned int) digitalRead(this->pin);
-}
-
-unsigned int DigitalIO::getPin() {
-	return this->pin;
-}
-
-void DigitalIO::write(unsigned int w) {
-	return digitalWrite(this->pin, w);
-}
-
-#ifdef TEST
-TestIO::TestIO(unsigned int pin) : IOInterface(pin, READ_WRITE) {
-
-}
-
-unsigned int TestIO::read() {
+unsigned int IOInterface::read() {
+	#ifndef TEST
+	if (type == ANALOGIC) {
+		return analogRead(this->pin);
+	} else if (type == DIGITAL) {
+		return (unsigned int) digitalRead(this->pin);
+	}
+	#else
 	return this->value;
+	#endif
 }
 
-unsigned int TestIO::getPin() {
+void IOInterface::write(unsigned int value) {
+	#ifndef TEST
+	if (type == ANALOGIC) {
+		analogWrite(this->pin, value);
+	} else if (type == DIGITAL) {
+		digitalWrite(this->pin, value);
+	}
+	#else
+	this->value = value;
+	#endif
+}
+
+
+unsigned int IOInterface::getPin() {
 	return this->pin;
 }
-
-void TestIO::write(unsigned int w) {
-    this->value = w;
-}
-#endif

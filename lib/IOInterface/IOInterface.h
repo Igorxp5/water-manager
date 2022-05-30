@@ -12,11 +12,11 @@ enum IOType {
 class IOInterface
 {
     public:
-        IOInterface(unsigned int pin, IOMode mode);
+        IOInterface(unsigned int pin, IOMode mode, IOType type);
 
-        virtual unsigned int read() = 0;
-        virtual void write(unsigned int w) = 0;
-        virtual unsigned int getPin() = 0;
+        unsigned int read();
+        void write(unsigned int w);
+        unsigned int getPin();
 
         static IOInterface* get(unsigned int pin);
         static void remove(unsigned int pin);
@@ -25,6 +25,10 @@ class IOInterface
     protected:
         unsigned int pin;
         IOMode mode;
+        IOType type;
+        #ifdef TEST
+        unsigned int value;
+        #endif
     
     private:
         static IOInterface** ios;
@@ -33,36 +37,4 @@ class IOInterface
         static int getIndex(unsigned int pin);
 };
 
-class DigitalIO: public IOInterface
-{
-    public:
-        DigitalIO(unsigned int pin, IOMode mode);
-
-        unsigned int read();
-        void write(unsigned int w);
-        unsigned int getPin();
-};
-
-class AnalogicIO: public IOInterface
-{
-    public:
-        AnalogicIO(unsigned int pin, IOMode mode);
-
-        unsigned int read();
-        void write(unsigned int w);
-        unsigned int getPin();
-};
-
-#ifdef TEST
-class TestIO: public IOInterface
-{
-    public:
-        TestIO(unsigned int pin);
-
-        unsigned int value = 0; 
-        unsigned int read();
-        void write(unsigned int w);
-        unsigned int getPin();
-};
-#endif
 #endif

@@ -1,9 +1,6 @@
 import pytest
 
-from .lib import utils
-from .lib.api import APIException
-
-from .test_protobuf.test_pb2 import _TestRequest, _TestResponse
+from .lib.api.exceptions import APIException
 
 
 async def test_create_io(api_client):

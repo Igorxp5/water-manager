@@ -9,7 +9,7 @@ Manager::Manager() {
 
 }
 
-OperationMode Manager::getMode() {
+OperationMode Manager::getOperationMode() {
     return this->mode;
 }
 
@@ -58,13 +58,15 @@ void Manager::setOperationMode(OperationMode mode) {
 
 void Manager::setWaterSourceState(char* name, bool enabled) {
     WaterSource* waterSource = this->getWaterSource(name);
-    if (this->mode == AUTOMATIC) {
-        //throw CANNOT_HANDLE_WATER_SOURCE_IN_AUTOMATIC;
-    }
-    if (enabled) {
-        waterSource->enable();
-    } else {
-        waterSource->disable();
+    if (!Exception::hasException()) {
+        if (this->mode == AUTO) {
+            return Exception::throwException(CANNOT_HANDLE_WATER_SOURCE_IN_AUTO);
+        }
+        if (enabled) {
+            waterSource->enable();
+        } else {
+            waterSource->disable();
+        }
     }
 }
 
@@ -163,7 +165,7 @@ void Manager::stopFillingWaterTank(String name) {
 }
 
 void Manager::loop() {
-    if (this->mode == AUTOMATIC) {
+    if (this->mode == AUTO) {
         for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
             this->errors[i] = this->waterTanks[i]->loop();
         }
@@ -171,8 +173,12 @@ void Manager::loop() {
 }
 
 void Manager::reset() {
+    this->setOperationMode(MANUAL);
+
     unsigned int total = this->totalWaterSources;
     for (unsigned int i = 0; i < total; i++) {
+        //turn off all water sources when resetting
+        this->setWaterSourceState(this->waterSourceNames[0], false);
         //remove the first water source from the list in each iteration
         delete this->unregisterWaterSource(this->waterSourceNames[0]);
     }

@@ -16,12 +16,12 @@ class Manager
     public:
         Manager();
 
-        OperationMode getMode();
         WaterTank* getWaterTank(String name);
         WaterSource* getWaterSource(char* name);
         char** getWaterSourceNames();
         unsigned int getWaterTankNames(String* list);
         unsigned int getTotalWaterSources();
+        OperationMode getOperationMode();
         void setOperationMode(OperationMode mode);
         void setWaterSourceState(char* name, bool enabled);
         void registerWaterSource(char* name, WaterSource* waterSource);

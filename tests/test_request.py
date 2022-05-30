@@ -1,9 +1,10 @@
-import pytest
 import asyncio
+
+import pytest
 
 from protobuf.out.python.api_pb2 import Request, Response
 
-from .lib.api import APIException
+from .lib.api.exceptions import APIException
 
 
 async def test_can_answer_multiples_requests(api_client):
@@ -62,5 +63,10 @@ async def test_handle_after_truncated_messages(api_client):
 
     assert not water_sources
 
-
-# TODO: Program should not crash due a large request
+@pytest.mark.xfail
+async def test_send_large_invalid_request(api_client):
+    """
+    Platform should not crash when receiving a large request.
+    Plataform should respond with an error For invalid message type in the request
+    """
+    raise NotImplementedError

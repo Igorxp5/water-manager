@@ -14,8 +14,8 @@ LOGGER = logging.getLogger(__name__)
 os.environ['PYTHONUNBUFFERED'] = '1'
 sys.path.append(PROJECT_ROOT)  # Add project to PYTHONPATH
 
-from .lib import utils
-from .lib.api import ArduinoConnection, APIClient
+from .lib.api import APIClient
+from .lib.api.arduino import ArduinoConnection
 
 
 def pytest_runtest_protocol(item, nextitem):
@@ -35,14 +35,15 @@ def upload_test_environment():
 
 @pytest.fixture(autouse=True)
 async def check_memory_leak(api_client):
-    before_free_memory = await api_client.get_memory_free()
-    LOGGER.debug(f'Free memory before starting the test: {before_free_memory} bytes!')
-    yield
     await api_client.reset()
-    after_free_memory = await api_client.get_memory_free()
-    LOGGER.debug(f'Free memory after finishing the test: {after_free_memory} bytes!')
-    if before_free_memory > after_free_memory:
-        LOGGER.warning(f'Possible memory leak found: {before_free_memory} bytes -> {after_free_memory} bytes!')
+    await api_client.clear_io()
+    free_memory = await api_client.get_free_memory()
+    LOGGER.debug(f'Free memory before starting the test: {free_memory} bytes!')
+    yield
+    free_memory = await api_client.get_free_memory()
+    LOGGER.debug(f'Free memory after finishing the test: {free_memory} bytes!')
+    await api_client.reset()
+    await api_client.clear_io()
 
 
 @pytest.fixture(scope='session')

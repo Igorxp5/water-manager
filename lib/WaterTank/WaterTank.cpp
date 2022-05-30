@@ -2,6 +2,7 @@
 
 #include "WaterTank.h"
 #include "Exception.h"
+#include "Utils.h"
 
 WaterTank::WaterTank(VolumeReader* volumeReader, WaterSource* waterSource) {
     this->volumeReader = volumeReader;
@@ -86,6 +87,7 @@ const RuntimeError* WaterTank::loop() {
 
     return error;
 }
+
 
 WaterSource::WaterSource(IOInterface* io) {
     this->io = io;

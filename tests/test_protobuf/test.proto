@@ -7,7 +7,7 @@ message _TestRequest {
         _TestSetIOValue setIOValue = 3;
         _TestGetIOValue getIOValue = 4;
         _TestClearIOS clearIOs = 5;
-        _TestMemoryFree memoryFree = 6;
+        _TestFreeMemory freeMemory = 6;
         _TestResetAPI resetAPI = 7;
     }
 }
@@ -29,6 +29,11 @@ message _TestResponse {
 
 message _TestCreateIO {
     uint32 pin = 1;
+    enum IOType {
+        DIGITAL = 0;
+        ANALOGIC = 1;
+    }
+    IOType type = 2;
 }
 
 message _TestSetIOValue {
@@ -43,7 +48,7 @@ message _TestGetIOValue {
 message _TestClearIOS {
 }
 
-message _TestMemoryFree {
+message _TestFreeMemory {
 }
 
 message _TestResetAPI {
