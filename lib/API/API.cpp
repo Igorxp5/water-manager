@@ -1,7 +1,6 @@
 #include "API.h"
 
 #include "WaterTank.h"
-#include "VolumeReader.h"
 #include "OperationMode.h"
 #include "IOInterface.h"
 #include "Utils.h"
@@ -19,44 +18,60 @@ void API::createWaterSource(char* name, short pin) {
     this->manager->registerWaterSource(name, waterSource);
 }
 
-void API::createWaterSource(char* name, short pin, String waterTankName) {
+void API::createWaterSource(char* name, short pin, char* waterTankName) {
+    if (this->manager->isWaterSourceRegistered(name)) {
+        return Exception::throwException(WATER_SOURCE_ALREADY_REGISTERED);
+    } else if (!this->manager->isWaterTankRegistered(waterTankName)) {
+        return Exception::throwException(WATER_TANK_NOT_FOUND);
+    }
     IOInterface* io = this->getOrCreateIO(pin, DIGITAL, READ_ONLY);
     WaterTank* waterTank = this->manager->getWaterTank(waterTankName);
     WaterSource* waterSource = new WaterSource(io, waterTank);
     this->manager->registerWaterSource(name, waterSource);
 }
 
-void API::createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor) {
-    IOInterface* io = this->getOrCreateIO(volumeReaderPin, ANALOGIC, READ_ONLY);
-    VolumeReader* volumeReader = new VolumeReader(io, pressureFactor, volumeFactor); 
-    WaterTank* waterTank = new WaterTank(volumeReader);
-
+void API::createWaterTank(char* name, short pressureSensorPin, float volumeFactor, float pressureFactor) {
+    if (this->manager->isWaterTankRegistered(name)) {
+        return Exception::throwException(WATER_TANK_ALREADY_REGISTERED);
+    }
+    IOInterface* pressureSensor = this->getOrCreateIO(pressureSensorPin, ANALOGIC, READ_ONLY);
+    WaterTank* waterTank = new WaterTank(pressureSensor, volumeFactor, pressureFactor);
     this->manager->registerWaterTank(name, waterTank);
 }
 
-void API::createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor, String waterSourceName) {
-    IOInterface* io = this->getOrCreateIO(volumeReaderPin, ANALOGIC, READ_ONLY);
+void API::createWaterTank(char* name, short pressureSensorPin, float volumeFactor, float pressureFactor, char* waterSourceName) {
+    if (this->manager->isWaterTankRegistered(name)) {
+        return Exception::throwException(WATER_TANK_ALREADY_REGISTERED);
+    } else if (!this->manager->isWaterSourceRegistered(waterSourceName)) {
+        return Exception::throwException(WATER_SOURCE_NOT_FOUND);
+    }
+    IOInterface* pressureSensor = this->getOrCreateIO(pressureSensorPin, ANALOGIC, READ_ONLY);
     WaterSource* waterSource = this->getWaterSource(waterSourceName);
 
-    VolumeReader* volumeReader = new VolumeReader(io, pressureFactor, volumeFactor); 
-    WaterTank* waterTank = new WaterTank(volumeReader, waterSource);
+    WaterTank* waterTank = new WaterTank(pressureSensor, volumeFactor, pressureFactor, waterSource);
 
     this->manager->registerWaterTank(name, waterTank);
 }
 
-void API::setWaterTankMinimumVolume(String name, float minimum) {
+void API::setWaterTankMinimumVolume(char* name, float minimum) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
-    waterTank->minimumVolume = minimum;
+    if (waterTank != NULL) {
+        waterTank->minimumVolume = minimum;
+    }
 }
 
-void API::setWaterTankMaxVolume(String name, float max) {
+void API::setWaterTankMaxVolume(char* name, float max) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
-    waterTank->maxVolume = max;
+    if (waterTank != NULL) {
+        waterTank->maxVolume = max;
+    }
 }
 
-void API::setWaterZeroVolume(String name, float pressure) {
+void API::setWaterZeroVolume(char* name, float pressure) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
-    waterTank->setZeroVolume(pressure);
+    if (waterTank != NULL) {
+        waterTank->setZeroVolume(pressure);
+    }
 }
 
 void API::setOperationMode(byte mode) {
@@ -73,7 +88,7 @@ byte API::getOperationMode() {
     return (byte) this->manager->getOperationMode();
 }
 
-void API::setWaterSource(char* name, bool enabled) {
+void API::setWaterSourceState(char* name, bool enabled) {
     this->manager->setWaterSourceState(name, enabled);
 }
 
@@ -81,26 +96,48 @@ char** API::getWaterSourceList() {
     return this->manager->getWaterSourceNames();
 }
 
-unsigned int API::getWaterTankList(String* list) {
-    return this->manager->getWaterTankNames(list);
+char** API::getWaterTankList() {
+    return this->manager->getWaterTankNames();
 }
 
-float API::getWaterTankVolume(String name) {
+float API::getWaterTankVolume(char* name) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
-    return waterTank->getVolume();
+    if (waterTank != NULL) {
+        return waterTank->getVolume();
+    }
+    return 0;
 }
 
-float API::getWaterTankPressure(String name) {
+float API::getWaterTankPressure(char* name) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
-    return waterTank->getPressure();
+    if (waterTank != NULL) {
+        return waterTank->getPressure();
+    }
+    return 0;
 }
 
 WaterSource* API::getWaterSource(char* name) {
     return this->manager->getWaterSource(name);
 }
 
+WaterTank* API::getWaterTank(char* name) {
+    return this->manager->getWaterTank(name);
+}
+
+char* API::getWaterSourceName(WaterSource* waterSource) {
+    return this->manager->getWaterSourceName(waterSource);
+}
+
+char* API::getWaterTankName(WaterTank* waterTank) {
+    return this->manager->getWaterTankName(waterTank);
+}
+
 unsigned int API::getTotalWaterSources() {
     return this->manager->getTotalWaterSources();
+}
+
+unsigned int API::getTotalWaterTanks() {
+    return this->manager->getTotalWaterTanks();
 }
 
 void API::removeWaterSource(char* name) {
@@ -110,9 +147,11 @@ void API::removeWaterSource(char* name) {
     }
 }
 
-void API::removeWaterTank(String name) {
+void API::removeWaterTank(char* name) {
     WaterTank* waterTank = this->manager->unregisterWaterTank(name);
-    delete waterTank;
+    if (waterTank != NULL) {
+        delete waterTank;
+    }
 }
 
 void API::reset() {

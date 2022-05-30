@@ -129,7 +129,12 @@ void sendOkResponse(unsigned int requestId) {
 
 void handleAPIRequest() {
     if (request.which_message == Request_createWaterSource_tag) {
-        api->createWaterSource(request.message.createWaterSource.name, request.message.createWaterSource.pin);
+        if (request.message.createWaterSource.has_waterTankName) {
+            api->createWaterSource(request.message.createWaterSource.name, request.message.createWaterSource.pin, 
+                                   request.message.createWaterSource.waterTankName);
+        } else {
+            api->createWaterSource(request.message.createWaterSource.name, request.message.createWaterSource.pin);
+        }
     } else if (request.which_message == Request_getWaterSourceList_tag) {
         char** waterSourceList = api->getWaterSourceList();
         unsigned int totalWaterSources = api->getTotalWaterSources();
@@ -143,7 +148,7 @@ void handleAPIRequest() {
         }
         free(waterSourceList);
     } else if (request.which_message == Request_removeWaterSource_tag) {
-        api->removeWaterSource(request.message.createWaterSource.name);
+        api->removeWaterSource(request.message.removeWaterSource.waterSourceName);
     } else if (request.which_message == Request_getWaterSource_tag) {
         WaterSource* waterSource = api->getWaterSource(request.message.createWaterSource.name);
         if (waterSource != NULL) {
@@ -153,9 +158,41 @@ void handleAPIRequest() {
             strcpy(waterSourceState.name, request.message.createWaterSource.name);
             waterSourceState.pin = waterSource->getPin();
             waterSourceState.enabled = waterSource->isEnabled();
+            if (waterSource->getWaterTank() != NULL) {
+                waterSourceState.has_sourceWaterTank = true;
+                strcpy(waterSourceState.sourceWaterTank, api->getWaterTankName(waterSource->getWaterTank()));
+            }
             response.message.waterSource = waterSourceState;
-            //TODO: Get water tank name
         }
+    } if (request.which_message == Request_createWaterTank_tag) {
+        if (request.message.createWaterTank.has_waterSourceName) {
+            api->createWaterTank(request.message.createWaterTank.name, request.message.createWaterTank.pressureSensorPin, 
+                                 request.message.createWaterTank.volumeFactor, request.message.createWaterTank.pressureFactor,
+                                 request.message.createWaterTank.waterSourceName);
+        } else {
+            api->createWaterTank(request.message.createWaterTank.name, request.message.createWaterTank.pressureSensorPin, 
+                                 request.message.createWaterTank.volumeFactor, request.message.createWaterTank.pressureFactor);
+        }
+    } else if (request.which_message == Request_getWaterTankList_tag) {
+        char** waterTankList = api->getWaterTankList();
+        unsigned int totalWaterTanks = api->getTotalWaterTanks();
+        response.has_message = true;
+        response.message.listValue_count = totalWaterTanks;
+        PrimitiveValue value = PrimitiveValue_init_zero;
+        for (unsigned int i = 0; i < totalWaterTanks; i++) {
+            value.which_content = PrimitiveValue_stringValue_tag;
+            strcpy(value.content.stringValue, waterTankList[i]);
+            response.message.listValue[i] = value;
+        }
+        free(waterTankList);
+    } else if (request.which_message == Request_removeWaterTank_tag) {
+        api->removeWaterTank(request.message.removeWaterTank.waterTankName);
+    } else if (request.which_message == Request_setWaterTankMinimumVolume_tag) {
+        api->setWaterTankMinimumVolume(request.message.setWaterTankMinimumVolume.waterTankName, request.message.setWaterTankMinimumVolume.value);
+    } else if (request.which_message == Request_setWaterTankMaxVolume_tag) {
+        api->setWaterTankMaxVolume(request.message.setWaterTankMaxVolume.waterTankName, request.message.setWaterTankMaxVolume.value);
+    } else if (request.which_message == Request_setWaterTankZeroVolume_tag) {
+        api->setWaterZeroVolume(request.message.setWaterTankZeroVolume.waterTankName, request.message.setWaterTankZeroVolume.value);
     } else if (request.which_message == Request_setMode_tag) {
         api->setOperationMode(request.message.setMode.mode);
     } else if (request.which_message == Request_getMode_tag) {
@@ -322,5 +359,8 @@ void loop() {
   
     api->loop();
 
-    //TODO: Check RuntimeErrors and send them
+    if (Exception::hasException()) {
+        Exception* exception = (Exception*) Exception::popException();
+        sendErrorResponse(0, (const RuntimeError*) exception);
+    }
 }

@@ -60,4 +60,7 @@ extern const InvalidRequest* MAX_WATER_TANKS_ERROR;
 
 extern const InvalidRequest* INVALID_OPERATION_MODE;
 
+extern const InvalidRequest* CANNOT_REMOVE_WATER_SOURCE_DEPENDENCY;
+extern const InvalidRequest* CANNOT_REMOVE_WATER_TANK_DEPENDENCY;
+
 #endif

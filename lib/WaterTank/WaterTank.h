@@ -1,7 +1,6 @@
 #ifndef WATER_TANK_H
 #define WATER_TANK_H
 
-#include "VolumeReader.h"
 #include "IOInterface.h"
 #include "Exception.h"
 
@@ -18,18 +17,23 @@ class WaterTank
         float maxVolume = 0;
         WaterSource* waterSource = NULL;
 
-        WaterTank(VolumeReader* volumeReader, WaterSource* waterSource=NULL);
+        WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor);
+        WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor, WaterSource* waterSource);
 
         float getVolume();
         float getPressure();
+        WaterSource* getWaterSource();
         void setZeroVolume(float pressure);
         void fill(bool force);
         void stopFilling();
-        const RuntimeError* loop();
+        void loop();
 
     protected:
-        VolumeReader* volumeReader;
-    
+        IOInterface* pressureSensor;
+        float volumeFactor;
+        float pressureFactor;
+        float zeroVolumePressure;
+
     private:
         unsigned long startFillingTime;
         unsigned long lastChangingTime;
@@ -48,6 +52,7 @@ class WaterSource
         void enable(bool force=false);
         void disable();
         bool isEnabled();
+        WaterTank* getWaterTank();
         unsigned int getPin();
 
     private:

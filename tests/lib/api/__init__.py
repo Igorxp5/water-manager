@@ -49,7 +49,14 @@ class APIClient:
 
     def get_water_source_list(self):
         return self.send_request('getWaterSourceList', response_type=list)
-    
+
+    def create_water_tank(self, name: str, volume_reader_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None):
+        return self.send_request('createWaterTank', volumeReaderPin=volume_reader_pin, volumeFactor=volume_factor,
+                                 pressureFactor=pressure_factor, waterSourceName=water_source_name)
+
+    def get_water_tank_list(self):
+        return self.send_request('getWaterTankList', response_type=list)
+
     def get_water_source(self, name: str):
         return self.send_request('getWaterSource', waterSourceName=name)
 

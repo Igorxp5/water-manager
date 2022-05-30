@@ -13,31 +13,32 @@ class API
         API();
 
         void createWaterSource(char* name, short pin);
-        void createWaterSource(char* name, short pin, String waterTankName);
-        void createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor);
-        void createWaterTank(String name, short volumeReaderPin, float volumeFactor, float pressureFactor, String waterSourceName);
-        void setWaterTankMinimumVolume(String name, float minimum);
-        void setWaterTankMaxVolume(String name, float max);
-        void setWaterZeroVolume(String name, float pressure);
+        void createWaterSource(char* name, short pin, char* waterTankName);
+        void createWaterTank(char* name, short volumeReaderPin, float volumeFactor, float pressureFactor);
+        void createWaterTank(char* name, short volumeReaderPin, float volumeFactor, float pressureFactor, char* waterSourceName);
+        void setWaterTankMinimumVolume(char* name, float minimum);
+        void setWaterTankMaxVolume(char* name, float max);
+        void setWaterZeroVolume(char* name, float pressure);
         void setOperationMode(byte mode);
         byte getOperationMode();
-        void setWaterSource(char* name, bool enabled);
+        void setWaterSourceState(char* name, bool enabled);
         WaterSource* getWaterSource(char* name);
+        WaterTank* getWaterTank(char* name);
+        char* getWaterSourceName(WaterSource* waterSource);
+        char* getWaterTankName(WaterTank* waterTank);
         char** getWaterSourceList();
-        unsigned int getWaterTankList(String* list);
-        float getWaterTankVolume(String name);
-        float getWaterTankPressure(String name);
+        char** getWaterTankList();
+        float getWaterTankVolume(char* name);
+        float getWaterTankPressure(char* name);
         unsigned int getTotalWaterSources();
+        unsigned int getTotalWaterTanks();
         void removeWaterSource(char* name);
-        void removeWaterTank(String name);
+        void removeWaterTank(char* name);
         void reset();
         void loop();
 
     private:
         Manager* manager = NULL;
-
-        WaterSource* getWaterSource(String name);
-        long getWaterSourceIndex(String name);
 
         IOInterface* getOrCreateIO(unsigned pin, IOType type, IOMode mode=READ_ONLY);
 };

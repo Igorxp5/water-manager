@@ -35,6 +35,11 @@ const InvalidRequest* MAX_WATER_TANKS_ERROR = new InvalidRequest("Max of water t
 
 const InvalidRequest* INVALID_OPERATION_MODE = new InvalidRequest("Invalid operation mode");
 
+const InvalidRequest* CANNOT_REMOVE_WATER_SOURCE_DEPENDENCY = new InvalidRequest(
+    "Cannot remove the water source, there is a water tank dependent of it");
+const InvalidRequest* CANNOT_REMOVE_WATER_TANK_DEPENDENCY = new InvalidRequest(
+    "Cannot remove the water tank, there is a water source dependent of it");
+
 Exception::Exception(const char* message, unsigned int exceptionType) {
     this->message = message;
     this->exceptionType = exceptionType;

@@ -10,42 +10,50 @@
 const unsigned int MAX_NAME_LENGTH = 20;
 const unsigned int MAX_WATER_SOURCES = 10;
 const unsigned int MAX_WATER_TANKS = 10;
+const unsigned int ERROR_INTERVAL = 10 * 1000;
 
 class Manager
 {
     public:
         Manager();
 
-        WaterTank* getWaterTank(String name);
-        WaterSource* getWaterSource(char* name);
-        char** getWaterSourceNames();
-        unsigned int getWaterTankNames(String* list);
-        unsigned int getTotalWaterSources();
         OperationMode getOperationMode();
         void setOperationMode(OperationMode mode);
+        WaterTank* getWaterTank(char* name);
+        WaterSource* getWaterSource(char* name);
+        char* getWaterSourceName(WaterSource* waterSource);
+        char* getWaterTankName(WaterTank* waterTank);
+        char** getWaterSourceNames();
+        char** getWaterTankNames();
+        unsigned int getTotalWaterTanks();
+        unsigned int getTotalWaterSources();
         void setWaterSourceState(char* name, bool enabled);
         void registerWaterSource(char* name, WaterSource* waterSource);
-        WaterSource* unregisterWaterSource(char* name);
+        void registerWaterTank(char* name, WaterTank* waterTank);
         bool isWaterSourceRegistered(char* name);
-        void registerWaterTank(String name, WaterTank* waterTank);
-        WaterTank* unregisterWaterTank(String name);
         bool isWaterTankRegistered(char* name);
-        void fillWaterTank(String name);
-        void stopFillingWaterTank(String name);
+        bool isWaterSourceDependency(char* name);
+        bool isWaterTankDependency(char* name);
+        WaterSource* unregisterWaterSource(char* name);
+        WaterTank* unregisterWaterTank(char* name);
+        void fillWaterTank(char* name);
+        void stopFillingWaterTank(char* name);
         void loop();
         void reset();
 
     private:
-        WaterTank** waterTanks = NULL;
-        String** waterTankNames = NULL;
+        WaterTank* waterTanks[MAX_WATER_TANKS];
+        char* waterTankNames[MAX_WATER_TANKS];
         WaterSource* waterSources[MAX_WATER_SOURCES];
         char* waterSourceNames[MAX_WATER_SOURCES];
         OperationMode mode = MANUAL;
-        const RuntimeError** errors = NULL;
         unsigned int totalWaterTanks = 0;
         unsigned int totalWaterSources = 0;
+        unsigned long lastLoopTime = 0;
+        unsigned int waterTankErrorIndex = 0;
+        const RuntimeError* waterTanksLoopErrors[MAX_WATER_TANKS];
 
-        int getWaterTankIndex(String name);
+        int getWaterTankIndex(char* name);
         int getWaterSourceIndex(char* name);
 };
 

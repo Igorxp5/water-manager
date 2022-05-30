@@ -4,29 +4,40 @@
 #include "Exception.h"
 #include "Utils.h"
 
-WaterTank::WaterTank(VolumeReader* volumeReader, WaterSource* waterSource) {
-    this->volumeReader = volumeReader;
+WaterTank::WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor, WaterSource* waterSource) {
+    this->pressureSensor = pressureSensor;
+    this->volumeFactor = volumeFactor;
+    this->pressureFactor = pressureFactor;
     this->waterSource = waterSource;
+    this->zeroVolumePressure = 0;
+}
+
+WaterTank::WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor) : WaterTank(pressureSensor, volumeFactor, pressureFactor, NULL){
+
 }
 
 float WaterTank::getVolume() {
-    return this->volumeReader->getValue();
+    return (this->getPressure() * volumeFactor) - this->zeroVolumePressure;
 }
 
 float WaterTank::getPressure() {
-    return this->volumeReader->getPressureValue();
+    return this->pressureSensor->read() * pressureFactor;
+}
+
+WaterSource* WaterTank::getWaterSource() {
+    return this->waterSource;
 }
 
 void WaterTank::setZeroVolume(float pressure) {
-    this->volumeReader->setZeroValue(pressure);
+    this->zeroVolumePressure = pressure;
 }
 
 void WaterTank::fill(bool force) {
     if (this->waterSource == NULL) {
-        //throw CANNOT_FILL_WATER_TANK_WITHOUT_WATER_SOURCE;
+        return Exception::throwException(CANNOT_FILL_WATER_TANK_WITHOUT_WATER_SOURCE);
     }
     if (!force && this->getVolume() >= this->maxVolume) {
-        //throw CANNOT_FILL_WATER_TANK_MAX_VOLUME;
+        return Exception::throwException(CANNOT_FILL_WATER_TANK_MAX_VOLUME);
     }
     this->lastChangingTime = 0;
     this->startFillingTime = millis();
@@ -38,12 +49,13 @@ void WaterTank::stopFilling() {
     this->waterSource->disable();
 }
 
-const RuntimeError* WaterTank::loop() {
+void WaterTank::loop() {
     if (this->waterSource != NULL && !this->waterSource->isEnabled()) {
-        return NULL;
+        return;
     }
 
     const RuntimeError* error = NULL;
+
     unsigned long currentTime = millis();
 
     if (currentTime < this->lastLoopTime) {
@@ -75,22 +87,17 @@ const RuntimeError* WaterTank::loop() {
         if (this->getVolume() >= this->maxVolume) {
             this->waterSource->disable();
         } else if (this->getVolume() <= this->minimumVolume) {
-            //try {
-                this->fill(false);
-            //} catch(RuntimeError* fillError) {
-                //If the water tank source is empty, do not start filling this water tank
-            //}
+            this->fill(false);
         }
     }
 
     this->lastLoopTime = millis();
 
-    return error;
+    Exception::throwException(error);
 }
 
+WaterSource::WaterSource(IOInterface* io) : WaterSource(io, NULL) {
 
-WaterSource::WaterSource(IOInterface* io) {
-    this->io = io;
 }
 
 WaterSource::WaterSource(IOInterface* io, WaterTank* waterTank) {
@@ -100,7 +107,7 @@ WaterSource::WaterSource(IOInterface* io, WaterTank* waterTank) {
 
 void WaterSource::enable(bool force) {
     if (!force && this->waterTank != NULL && this->waterTank->getVolume() <= this->waterTank->minimumVolume) {
-        //throw CANNOT_ENABLE_WATER_SOURCE_DUE_MINIMUM_VOLUME;
+        Exception::throwException(CANNOT_ENABLE_WATER_SOURCE_DUE_MINIMUM_VOLUME);
     }
     this->io->write(HIGH);
 }
@@ -115,4 +122,8 @@ bool WaterSource::isEnabled() {
 
 unsigned int WaterSource::getPin() {
     return this->io->getPin();
+}
+
+WaterTank* WaterSource::getWaterTank() {
+    return this->waterTank;
 }
