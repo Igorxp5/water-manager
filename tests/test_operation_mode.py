@@ -2,11 +2,12 @@ import asyncio
 
 import pytest
 
+from .lib.api import APIClient
 from .lib.api.models import OperationMode
 from .lib.api.exceptions import APIInvalidRequest
 
 
-async def test_set_get_auto_mode(api_client):
+async def test_set_get_auto_mode(api_client: APIClient):
     """Platform should be able to set and get current operation mode"""
     default_mode = await api_client.get_operation_mode()
 
@@ -18,8 +19,14 @@ async def test_set_get_auto_mode(api_client):
 
     assert mode is OperationMode.AUTO
 
+    await api_client.set_operation_mode(OperationMode.MANUAL)
 
-async def test_reset_back_to_manual_mode(api_client):
+    mode = await api_client.get_operation_mode()
+
+    assert mode is OperationMode.MANUAL
+
+
+async def test_reset_back_to_manual_mode(api_client: APIClient):
     """Platform should back to manual mode when the API is reset"""
     await api_client.set_operation_mode(OperationMode.AUTO)
 
@@ -34,7 +41,7 @@ async def test_reset_back_to_manual_mode(api_client):
     assert mode is OperationMode.MANUAL
 
 
-async def test_reset_close_water_sources(api_client):
+async def test_reset_close_water_sources(api_client: APIClient):
     """Platform should turn off all water sources before resetting the API"""
     name, pin = 'Compesa water source', 15
 
@@ -47,7 +54,7 @@ async def test_reset_close_water_sources(api_client):
     assert await api_client.get_io_value(pin) == 0
 
 
-async def test_set_invalid_operation_mode(api_client):
+async def test_set_invalid_operation_mode(api_client: APIClient):
     request = api_client.create_request('setMode', mode=20)
     payload = api_client.build_request_wrapper(request)
 

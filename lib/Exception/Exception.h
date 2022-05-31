@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+const byte MAX_ERROR_LENGTH = 100;
+
 class Exception
 {
     public:
@@ -62,5 +64,7 @@ extern const InvalidRequest* INVALID_OPERATION_MODE;
 
 extern const InvalidRequest* CANNOT_REMOVE_WATER_SOURCE_DEPENDENCY;
 extern const InvalidRequest* CANNOT_REMOVE_WATER_TANK_DEPENDENCY;
+
+extern const Exception* PIN_NOT_FOUND;
 
 #endif

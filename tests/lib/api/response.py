@@ -27,8 +27,27 @@ class WaterSourceStateParser(APIResponseMessageParser):
     @staticmethod
     def parse(raw_field):
         field = APIResponse.parse_dict_field(raw_field)
+        field.setdefault('pin', 0)
         field.setdefault('enabled', False)
         field.setdefault('sourceWaterTank', None)
+        return field
+
+
+class WaterTankStateParser(APIResponseMessageParser):
+    @staticmethod
+    def parse(raw_field):
+        field = APIResponse.parse_dict_field(raw_field)
+        field.setdefault('pressureSensorPin', 0)
+        field.setdefault('isFilling', False)
+        field.setdefault('volumeFactor', 0)
+        field.setdefault('pressureFactor', 0)
+        field.setdefault('minimumVolume', 0)
+        field.setdefault('maxVolume', 0)
+        field.setdefault('zeroVolumePressure', 0)
+        field.setdefault('rawPressureValue', 0)
+        field.setdefault('pressure', 0)
+        field.setdefault('volume', 0)
+        field.setdefault('waterSource', None)
         return field
 
 
@@ -44,7 +63,8 @@ class APIResponse:
         '_TestResponseValue': GET_FIRST_FIELD_PARSER,
         'PrimitiveValue': GET_FIRST_FIELD_PARSER,
         'Value': GET_FIRST_FIELD_PARSER,
-        'WaterSourceState': WaterSourceStateParser()
+        'WaterSourceState': WaterSourceStateParser(),
+        'WaterTankState': WaterTankStateParser()
     }
 
     def __init__(self, id_: int, message: str, error: APIException = None):

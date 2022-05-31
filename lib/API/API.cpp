@@ -70,7 +70,21 @@ void API::setWaterTankMaxVolume(char* name, float max) {
 void API::setWaterZeroVolume(char* name, float pressure) {
     WaterTank* waterTank = this->manager->getWaterTank(name);
     if (waterTank != NULL) {
-        waterTank->setZeroVolume(pressure);
+        waterTank->zeroVolumePressure = pressure;
+    }
+}
+
+void API::setWaterTankVolumeFactor(char* name, float volumeFactor) {
+    WaterTank* waterTank = this->manager->getWaterTank(name);
+    if (waterTank != NULL) {
+        waterTank->volumeFactor = volumeFactor;
+    }
+}
+
+void API::setWaterTankPressureFactor(char* name, float pressureFactor) {
+    WaterTank* waterTank = this->manager->getWaterTank(name);
+    if (waterTank != NULL) {
+        waterTank->pressureFactor = pressureFactor;
     }
 }
 
@@ -143,6 +157,10 @@ unsigned int API::getTotalWaterTanks() {
 void API::removeWaterSource(char* name) {
     WaterSource* waterSource = this->manager->unregisterWaterSource(name);
     if (waterSource != NULL) {
+        unsigned int pin = waterSource->getPin();
+        if (!this->manager->isIOInterfaceDependency(pin)) {
+            IOInterface::remove(pin);
+        }
         delete waterSource;
     }
 }
@@ -150,6 +168,10 @@ void API::removeWaterSource(char* name) {
 void API::removeWaterTank(char* name) {
     WaterTank* waterTank = this->manager->unregisterWaterTank(name);
     if (waterTank != NULL) {
+        unsigned int pin = waterTank->getPressureSensorPin();
+        if (!this->manager->isIOInterfaceDependency(pin)) {
+            IOInterface::remove(pin);
+        }
         delete waterTank;
     }
 }

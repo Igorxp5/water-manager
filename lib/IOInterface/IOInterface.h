@@ -27,7 +27,7 @@ class IOInterface
         IOMode mode;
         IOType type;
         #ifdef TEST
-        unsigned int value;
+        unsigned int value = 0;
         #endif
     
     private:

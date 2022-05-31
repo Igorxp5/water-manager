@@ -6,10 +6,11 @@
 #include "Exception.h"
 #include "WaterTank.h"
 #include "OperationMode.h"
+#include "IOInterface.h"
 
-const unsigned int MAX_NAME_LENGTH = 20;
-const unsigned int MAX_WATER_SOURCES = 10;
-const unsigned int MAX_WATER_TANKS = 10;
+const byte MAX_NAME_LENGTH = 20;
+const byte MAX_WATER_SOURCES = 10;
+const byte MAX_WATER_TANKS = 10;
 const unsigned int ERROR_INTERVAL = 10 * 1000;
 
 class Manager
@@ -34,6 +35,8 @@ class Manager
         bool isWaterTankRegistered(char* name);
         bool isWaterSourceDependency(char* name);
         bool isWaterTankDependency(char* name);
+        bool isIOInterfaceDependency(unsigned int pin);
+        bool isIOInterfaceDependency(IOInterface* io);
         WaterSource* unregisterWaterSource(char* name);
         WaterTank* unregisterWaterTank(char* name);
         void fillWaterTank(char* name);

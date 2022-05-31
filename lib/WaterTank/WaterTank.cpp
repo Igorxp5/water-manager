@@ -24,12 +24,16 @@ float WaterTank::getPressure() {
     return this->pressureSensor->read() * pressureFactor;
 }
 
-WaterSource* WaterTank::getWaterSource() {
-    return this->waterSource;
+unsigned int WaterTank::getPressureRawValue() {
+    return this->pressureSensor->read();
 }
 
-void WaterTank::setZeroVolume(float pressure) {
-    this->zeroVolumePressure = pressure;
+unsigned int WaterTank::getPressureSensorPin() {
+    return this->pressureSensor->getPin();
+}
+
+WaterSource* WaterTank::getWaterSource() {
+    return this->waterSource;
 }
 
 void WaterTank::fill(bool force) {
@@ -43,6 +47,10 @@ void WaterTank::fill(bool force) {
     this->startFillingTime = millis();
     this->lastLoopTime = this->startFillingTime;
     this->waterSource->enable(force);
+}
+
+bool WaterTank::isFilling() {
+    return this->waterSource->isEnabled();
 }
 
 void WaterTank::stopFilling() {

@@ -101,7 +101,7 @@ void sendErrorResponse(unsigned int requestId, const char* error) {
     response.has_message = true;
     response.message.has_value = true;
     response.message.value.which_content = PrimitiveValue_stringValue_tag;
-    strcpy(response.message.value.content.stringValue, error);
+    strncpy(response.message.value.content.stringValue, error, MAX_ERROR_LENGTH);
     sendResponse();
 }
 
@@ -143,24 +143,26 @@ void handleAPIRequest() {
         PrimitiveValue value = PrimitiveValue_init_zero;
         for (unsigned int i = 0; i < totalWaterSources; i++) {
             value.which_content = PrimitiveValue_stringValue_tag;
-            strcpy(value.content.stringValue, waterSourceList[i]);
+            strncpy(value.content.stringValue, waterSourceList[i], MAX_NAME_LENGTH);
             response.message.listValue[i] = value;
         }
         free(waterSourceList);
     } else if (request.which_message == Request_removeWaterSource_tag) {
         api->removeWaterSource(request.message.removeWaterSource.waterSourceName);
+    } else if (request.which_message == Request_setWaterSourceState_tag) {
+        api->setWaterSourceState(request.message.setWaterSourceState.waterSourceName, request.message.setWaterSourceState.state);
     } else if (request.which_message == Request_getWaterSource_tag) {
-        WaterSource* waterSource = api->getWaterSource(request.message.createWaterSource.name);
+        WaterSource* waterSource = api->getWaterSource(request.message.getWaterSource.waterSourceName);
         if (waterSource != NULL) {
             response.has_message = true;
             response.message.has_waterSource = true;
             WaterSourceState waterSourceState = WaterSourceState_init_zero;
-            strcpy(waterSourceState.name, request.message.createWaterSource.name);
+            strncpy(waterSourceState.name, request.message.getWaterSource.waterSourceName, MAX_NAME_LENGTH);
             waterSourceState.pin = waterSource->getPin();
             waterSourceState.enabled = waterSource->isEnabled();
             if (waterSource->getWaterTank() != NULL) {
                 waterSourceState.has_sourceWaterTank = true;
-                strcpy(waterSourceState.sourceWaterTank, api->getWaterTankName(waterSource->getWaterTank()));
+                strncpy(waterSourceState.sourceWaterTank, api->getWaterTankName(waterSource->getWaterTank()), MAX_NAME_LENGTH);
             }
             response.message.waterSource = waterSourceState;
         }
@@ -181,18 +183,45 @@ void handleAPIRequest() {
         PrimitiveValue value = PrimitiveValue_init_zero;
         for (unsigned int i = 0; i < totalWaterTanks; i++) {
             value.which_content = PrimitiveValue_stringValue_tag;
-            strcpy(value.content.stringValue, waterTankList[i]);
+            strncpy(value.content.stringValue, waterTankList[i], MAX_NAME_LENGTH);
             response.message.listValue[i] = value;
         }
         free(waterTankList);
     } else if (request.which_message == Request_removeWaterTank_tag) {
         api->removeWaterTank(request.message.removeWaterTank.waterTankName);
+    } else if (request.which_message == Request_getWaterTank_tag) {
+        WaterTank* waterTank = api->getWaterTank(request.message.getWaterTank.waterTankName);
+        if (waterTank != NULL) {
+            response.has_message = true;
+            response.message.has_waterTank = true;
+            WaterTankState waterTankState = WaterTankState_init_zero;
+            strncpy(waterTankState.name, request.message.getWaterTank.waterTankName, MAX_NAME_LENGTH);
+            waterTankState.pressureSensorPin = waterTank->getPressureSensorPin();
+            waterTankState.isFilling = waterTank->isFilling();
+            waterTankState.volumeFactor = waterTank->volumeFactor;
+            waterTankState.pressureFactor = waterTank->pressureFactor;
+            waterTankState.minimumVolume = waterTank->minimumVolume;
+            waterTankState.maxVolume = waterTank->maxVolume;
+            waterTankState.zeroVolumePressure = waterTank->zeroVolumePressure;
+            waterTankState.rawPressureValue = waterTank->getPressureRawValue();
+            waterTankState.pressure = waterTank->getPressure();
+            waterTankState.volume = waterTank->getVolume();
+            if (waterTank->getWaterSource() != NULL) {
+                waterTankState.has_waterSource = true;
+                strncpy(waterTankState.waterSource, api->getWaterSourceName(waterTank->getWaterSource()), MAX_NAME_LENGTH);
+            }
+            response.message.waterTank = waterTankState;
+        }
     } else if (request.which_message == Request_setWaterTankMinimumVolume_tag) {
         api->setWaterTankMinimumVolume(request.message.setWaterTankMinimumVolume.waterTankName, request.message.setWaterTankMinimumVolume.value);
     } else if (request.which_message == Request_setWaterTankMaxVolume_tag) {
         api->setWaterTankMaxVolume(request.message.setWaterTankMaxVolume.waterTankName, request.message.setWaterTankMaxVolume.value);
     } else if (request.which_message == Request_setWaterTankZeroVolume_tag) {
         api->setWaterZeroVolume(request.message.setWaterTankZeroVolume.waterTankName, request.message.setWaterTankZeroVolume.value);
+    } else if (request.which_message == Request_setWaterTankVolumeFactor_tag) {
+        api->setWaterTankVolumeFactor(request.message.setWaterTankVolumeFactor.waterTankName, request.message.setWaterTankVolumeFactor.value);
+    } else if (request.which_message == Request_setWaterTankPressureFactor_tag) {
+        api->setWaterTankPressureFactor(request.message.setWaterTankPressureFactor.waterTankName, request.message.setWaterTankPressureFactor.value);
     } else if (request.which_message == Request_setMode_tag) {
         api->setOperationMode(request.message.setMode.mode);
     } else if (request.which_message == Request_getMode_tag) {
@@ -239,7 +268,7 @@ void sendErrorTestResponse(unsigned int requestId, const char* error) {
     testResponse.error = true;
     testResponse.has_message = true;
     testResponse.message.which_value = _TestResponseValue_stringValue_tag;
-    strcpy(testResponse.message.value.stringValue, error);
+    strncpy(testResponse.message.value.stringValue, error, MAX_ERROR_LENGTH);
     sendTestResponse();
 }
 

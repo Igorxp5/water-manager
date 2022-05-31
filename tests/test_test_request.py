@@ -1,9 +1,10 @@
 import pytest
 
+from .lib.api import APIClient
 from .lib.api.exceptions import APIException
 
 
-async def test_create_io(api_client):
+async def test_create_io(api_client: APIClient):
     """
     Platform should be able to test IO
     Platform should return an error when it receives CreateIO request to an already set pin
@@ -18,7 +19,7 @@ async def test_create_io(api_client):
     assert response.message == 'TestIO already set with that pin'
 
 
-async def test_set_and_get_io(api_client):
+async def test_set_and_get_io(api_client: APIClient):
     """Platform should be able to set/get values for TestIO"""
     pin = 2
     value = 20
@@ -30,7 +31,7 @@ async def test_set_and_get_io(api_client):
     assert await api_client.get_io_value(pin=pin) == value
 
 
-async def test_set_undefined_pin(api_client):
+async def test_set_undefined_pin(api_client: APIClient):
     """
     Platform should be able to answer with an error when setting undefined pin 
     """
@@ -42,7 +43,7 @@ async def test_set_undefined_pin(api_client):
     assert response.message == 'TestIO with that pin does not exist'
 
 
-async def test_get_undefined_pin(api_client):
+async def test_get_undefined_pin(api_client: APIClient):
     """Platform should be able to answer with an error when getting undefined pin"""
     with pytest.raises(APIException) as exc_info:
         await api_client.get_io_value(pin=4)
@@ -52,7 +53,7 @@ async def test_get_undefined_pin(api_client):
     assert response.message == 'TestIO with that pin does not exist'
 
 
-async def test_clear_all_test_ios(api_client):
+async def test_clear_all_test_ios(api_client: APIClient):
     """Platform should be able to delete all set TestIO's"""
     pin = 5
     value = 5

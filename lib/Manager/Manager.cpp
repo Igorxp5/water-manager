@@ -104,7 +104,7 @@ void Manager::registerWaterSource(char* name, WaterSource* waterSource) {
         this->totalWaterSources += 1;
 
         char* waterSourceName = new char[MAX_NAME_LENGTH + 1];
-        strcpy(waterSourceName, name);
+        strncpy(waterSourceName, name, MAX_NAME_LENGTH);
         this->waterSources[this->totalWaterSources - 1] = waterSource;
         this->waterSourceNames[this->totalWaterSources - 1] = waterSourceName;
     }
@@ -119,7 +119,7 @@ void Manager::registerWaterTank(char* name, WaterTank* waterTank) {
         this->totalWaterTanks += 1;
 
         char* waterTankName = new char[MAX_NAME_LENGTH + 1];
-        strcpy(waterTankName, name);
+        strncpy(waterTankName, name, MAX_NAME_LENGTH);
         this->waterTanks[this->totalWaterTanks - 1] = waterTank;
         this->waterTankNames[this->totalWaterTanks - 1] = waterTankName;
     }
@@ -154,7 +154,7 @@ WaterTank* Manager::unregisterWaterTank(char* name) {
     WaterTank* waterTank = NULL;
 
     if (!this->isWaterTankRegistered(name)) {
-        Exception::throwException(WATER_SOURCE_NOT_FOUND);
+        Exception::throwException(WATER_TANK_NOT_FOUND);
     } else if (this->isWaterTankDependency(name)) {
         Exception::throwException(CANNOT_REMOVE_WATER_TANK_DEPENDENCY);
     } else {
@@ -204,6 +204,28 @@ bool Manager::isWaterTankDependency(char* name) {
             if (this->waterSources[i]->getWaterTank() == waterTank) {
                 return true;
             }
+        }
+    }
+    return false;
+}
+
+bool Manager::isIOInterfaceDependency(unsigned int pin) {
+    IOInterface* io = IOInterface::get(pin);
+    if (io == NULL) {
+        return false;
+    }
+    return this->isIOInterfaceDependency(io); 
+}
+
+bool Manager::isIOInterfaceDependency(IOInterface* io) {
+    for (unsigned int i = 0; i < this->totalWaterSources; i++) {
+        if (this->waterSources[i]->getPin() == io->getPin()) {
+            return true;
+        }
+    }
+    for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
+        if (this->waterTanks[i]->getPressureSensorPin() == io->getPin()) {
+            return true;
         }
     }
     return false;
@@ -266,7 +288,7 @@ void Manager::reset() {
 
 int Manager::getWaterTankIndex(char* name) {
     for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
-        if (strcmp(this->waterTankNames[i], name) == 0) {
+        if (strncmp(this->waterTankNames[i], name, MAX_NAME_LENGTH) == 0) {
             return i;
         }
     }
@@ -275,7 +297,7 @@ int Manager::getWaterTankIndex(char* name) {
 
 int Manager::getWaterSourceIndex(char* name) {
     for (unsigned int i = 0; i < this->totalWaterSources; i++) {
-        if (strcmp(this->waterSourceNames[i], name) == 0) {
+        if (strncmp(this->waterSourceNames[i], name, MAX_NAME_LENGTH) == 0) {
             return i;
         }
     }

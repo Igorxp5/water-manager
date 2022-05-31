@@ -34,7 +34,7 @@ def upload_test_environment():
     assert process.returncode == 0, 'Failed to upload test environment to Arduino'
 
 @pytest.fixture(autouse=True)
-async def check_memory_leak(api_client):
+async def check_memory_leak(api_client: APIClient):
     await api_client.reset()
     await api_client.clear_io()
     free_memory = await api_client.get_free_memory()
@@ -56,3 +56,8 @@ def api_client(arduino_connection, event_loop):
     client = APIClient(arduino_connection, event_loop=event_loop)
     yield client
     client.close()
+
+
+@pytest.fixture
+async def reset_api_timeout(api_client: APIClient):
+    api_client.set_timeout(APIClient.DEFAULT_REQUEST_TIMEOUT)

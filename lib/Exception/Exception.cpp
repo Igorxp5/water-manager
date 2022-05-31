@@ -40,6 +40,8 @@ const InvalidRequest* CANNOT_REMOVE_WATER_SOURCE_DEPENDENCY = new InvalidRequest
 const InvalidRequest* CANNOT_REMOVE_WATER_TANK_DEPENDENCY = new InvalidRequest(
     "Cannot remove the water tank, there is a water source dependent of it");
 
+const Exception* PIN_NOT_FOUND = new InvalidRequest("Pin is not defined in an IOInterface object");
+
 Exception::Exception(const char* message, unsigned int exceptionType) {
     this->message = message;
     this->exceptionType = exceptionType;

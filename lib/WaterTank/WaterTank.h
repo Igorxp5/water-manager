@@ -15,24 +15,26 @@ class WaterTank
     public:
         float minimumVolume = 0;
         float maxVolume = 0;
-        WaterSource* waterSource = NULL;
+        float volumeFactor;
+        float pressureFactor;
+        float zeroVolumePressure;
 
         WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor);
         WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor, WaterSource* waterSource);
 
         float getVolume();
         float getPressure();
+        unsigned int getPressureRawValue();
+        unsigned int getPressureSensorPin();
         WaterSource* getWaterSource();
-        void setZeroVolume(float pressure);
         void fill(bool force);
+        bool isFilling();
         void stopFilling();
         void loop();
 
     protected:
         IOInterface* pressureSensor;
-        float volumeFactor;
-        float pressureFactor;
-        float zeroVolumePressure;
+        WaterSource* waterSource = NULL;
 
     private:
         unsigned long startFillingTime;

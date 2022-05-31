@@ -19,6 +19,8 @@ class API
         void setWaterTankMinimumVolume(char* name, float minimum);
         void setWaterTankMaxVolume(char* name, float max);
         void setWaterZeroVolume(char* name, float pressure);
+        void setWaterTankVolumeFactor(char* name, float volumeFactor);
+        void setWaterTankPressureFactor(char* name, float pressureFactor);
         void setOperationMode(byte mode);
         byte getOperationMode();
         void setWaterSourceState(char* name, bool enabled);

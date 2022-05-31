@@ -1,7 +1,9 @@
 #include "IOInterface.h"
 
-#include <Arduino.h>
 #include "Utils.h"
+#include "Exception.h"
+
+#include <Arduino.h>
 
 int ITEM_NOT_FOUND = -1;
 
@@ -42,26 +44,24 @@ IOInterface* IOInterface::get(unsigned int pin) {
 void IOInterface::remove(unsigned int pin) {
     int ioIndex = IOInterface::getIndex(pin);
 	if (ioIndex == ITEM_NOT_FOUND) {
-		//throw PIN_NOT_FOUND
-	} else {
-		delete IOInterface::ios[ioIndex];
+		return Exception::throwException(PIN_NOT_FOUND);
+	}
+	delete IOInterface::ios[ioIndex];
 
-		for (unsigned int i = ioIndex + 1; i < IOInterface::totalIos; i++) {
-			IOInterface::ios[i - 1] = IOInterface::ios[i];
-			IOInterface::ioPins[i - 1] = IOInterface::ioPins[i];
-		}
-
-		IOInterface::totalIos -= 1;
-
-		IOInterface::ios = (IOInterface**) realloc(IOInterface::ios, IOInterface::totalIos * sizeof(IOInterface*));
-		IOInterface::ioPins = (unsigned int*) realloc(IOInterface::ioPins, IOInterface::totalIos * sizeof(unsigned int));
+	for (unsigned int i = ioIndex + 1; i < IOInterface::totalIos; i++) {
+		IOInterface::ios[i - 1] = IOInterface::ios[i];
+		IOInterface::ioPins[i - 1] = IOInterface::ioPins[i];
 	}
 
+	IOInterface::totalIos -= 1;
+
+	IOInterface::ios = (IOInterface**) realloc(IOInterface::ios, IOInterface::totalIos * sizeof(IOInterface*));
+	IOInterface::ioPins = (unsigned int*) realloc(IOInterface::ioPins, IOInterface::totalIos * sizeof(unsigned int));
 }
 
 
 void IOInterface::removeAll() {
-	while (IOInterface::totalIos > 0) {
+	for (unsigned int i = 0; i < IOInterface::totalIos; i++) {
 		IOInterface::remove(IOInterface::ioPins[0]);
 	}
 }
@@ -85,6 +85,7 @@ unsigned int IOInterface::read() {
 	#else
 	return this->value;
 	#endif
+	return 0;
 }
 
 void IOInterface::write(unsigned int value) {

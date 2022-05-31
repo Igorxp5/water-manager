@@ -44,21 +44,45 @@ class APIClient:
     def create_water_source(self, name: str, pin: int, water_tank_name: str = None):
         return self.send_request('createWaterSource', name=name, pin=pin, waterTankName=water_tank_name)
 
+    def get_water_source(self, name: str):
+        return self.send_request('getWaterSource', waterSourceName=name)
+
+    def set_water_source_state(self, name: str, enabled: bool):
+        return self.send_request('setWaterSourceState', waterSourceName=name, state=enabled)
+
     def remove_water_source(self, name: str):
         return self.send_request('removeWaterSource', waterSourceName=name)
 
     def get_water_source_list(self):
         return self.send_request('getWaterSourceList', response_type=list)
 
-    def create_water_tank(self, name: str, volume_reader_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None):
-        return self.send_request('createWaterTank', volumeReaderPin=volume_reader_pin, volumeFactor=volume_factor,
+    def create_water_tank(self, name: str, pressure_sensor_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None):
+        return self.send_request('createWaterTank', name=name, pressureSensorPin=pressure_sensor_pin, volumeFactor=volume_factor,
                                  pressureFactor=pressure_factor, waterSourceName=water_source_name)
+
+    def remove_water_tank(self, name: str):
+        return self.send_request('removeWaterTank', waterTankName=name)
+    
+    def set_water_tank_minimum_volume(self, name: str, value: float):
+        return self.send_request('setWaterTankMinimumVolume', waterTankName=name, value=value)
+    
+    def set_water_tank_max_volume(self, name: str, value: float):
+        return self.send_request('setWaterTankMaxVolume', waterTankName=name, value=value)
+    
+    def set_water_tank_zero_volume_pressure(self, name: str, value: float):
+        return self.send_request('setWaterTankZeroVolume', waterTankName=name, value=value)
+
+    def set_water_tank_volume_factor(self, name: str, value: float):
+        return self.send_request('setWaterTankVolumeFactor', waterTankName=name, value=value)
+    
+    def set_water_tank_pressure_factor(self, name: str, value: float):
+        return self.send_request('setWaterTankPressureFactor', waterTankName=name, value=value)
 
     def get_water_tank_list(self):
         return self.send_request('getWaterTankList', response_type=list)
-
-    def get_water_source(self, name: str):
-        return self.send_request('getWaterSource', waterSourceName=name)
+    
+    def get_water_tank(self, name: str):
+        return self.send_request('getWaterTank', waterTankName=name)
 
     def set_operation_mode(self, mode: OperationMode):
         return self.send_request('setMode', mode=mode.value)
