@@ -71,3 +71,22 @@ async def test_clear_all_test_ios(api_client: APIClient):
     response = exc_info.value.response
     assert response.error is APIException
     assert response.message == 'TestIO with that pin does not exist'
+
+
+async def test_advance_and_get_millis(api_client: APIClient):
+    """Platform should be able to mock time for testing"""
+    current_time = await api_client.get_millis()
+
+    assert current_time != 0
+
+    offset = 1 * 60 * 60 * 1000 # 1 hour
+
+    await api_client.set_clock_offset(offset)
+
+    assert await api_client.get_millis() >= current_time + offset
+
+
+@pytest.mark.xfail
+async def test_mock_long_overflow(api_clinet: APIClient):
+    """Platform shuold be able to mock a long overflow on millis"""
+    raise NotImplementedError

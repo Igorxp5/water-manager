@@ -6,7 +6,8 @@
 const int ITEM_NOT_FOUND = -1;
 
 Manager::Manager() {
-
+    this->timer = new Clock();
+    this->timer->startTimer();
 }
 
 OperationMode Manager::getOperationMode() {
@@ -231,14 +232,20 @@ bool Manager::isIOInterfaceDependency(IOInterface* io) {
     return false;
 }
 
-void Manager::fillWaterTank(char* name) {
+void Manager::fillWaterTank(char* name, bool force) {
+    if (this->mode == AUTO) {
+        return Exception::throwException(CANNOT_HANDLE_WATER_TANK_IN_AUTO);
+    }
     WaterTank* waterTank = this->getWaterTank(name);
     if (waterTank != NULL) {
-        waterTank->fill(this->mode == MANUAL);
+        waterTank->fill(force);
     }
 }
 
 void Manager::stopFillingWaterTank(char* name) {
+    if (this->mode == AUTO) {
+        return Exception::throwException(CANNOT_HANDLE_WATER_TANK_IN_AUTO);
+    }
     WaterTank* waterTank = this->getWaterTank(name);
     if (waterTank != NULL) {
         waterTank->stopFilling();
@@ -246,17 +253,12 @@ void Manager::stopFillingWaterTank(char* name) {
 }
 
 void Manager::loop() {
-    unsigned long currentTime = millis();
-    if (currentTime < this->lastLoopTime) {
-        //Long overflow
-        this->lastLoopTime = currentTime;
-    }
     if (this->mode == AUTO) {
         for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
             this->waterTanks[i]->loop();
             this->waterTanksLoopErrors[i] = (const RuntimeError*) Exception::popException();
         }
-        if (currentTime - this->lastLoopTime >= ERROR_INTERVAL) {
+        if (this->timer->getElapsedTime() >= ERROR_INTERVAL) {
             const RuntimeError* error = NULL;
             for (; error != NULL && this->waterTankErrorIndex < this->totalWaterTanks; this->waterTankErrorIndex++) {
                 error = this->waterTanksLoopErrors[this->waterTankErrorIndex];
@@ -265,7 +267,7 @@ void Manager::loop() {
             Exception::throwException(error);
         }
     }
-    this->lastLoopTime = millis();
+    this->timer->startTimer();
 }
 
 void Manager::reset() {

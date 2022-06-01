@@ -78,3 +78,9 @@ async def test_send_large_invalid_request(api_client: APIClient):
     # FIXME The platform is currently supporting larging requests, but the APIClient is not 
     # handling the responses well.
     raise NotImplementedError
+
+
+@pytest.mark.xfail
+async def test_keep_receiving_request_after_50_days(api_client: APIClient):
+    """Platform should keep receiving requests after 50 days (long overflow)"""
+    raise NotImplementedError

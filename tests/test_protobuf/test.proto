@@ -8,7 +8,9 @@ message _TestRequest {
         _TestGetIOValue getIOValue = 4;
         _TestClearIOS clearIOs = 5;
         _TestFreeMemory freeMemory = 6;
-        _TestResetAPI resetAPI = 7;
+        _TestSetClockOffset setClockOffset = 7;
+        _TestGetMillis getMillis = 8;
+        _TestResetAPI resetAPI = 9;
     }
 }
 
@@ -16,8 +18,9 @@ message _TestResponseValue {
     oneof value {
         bool boolValue = 2;
         int32 intValue = 3;
-        float doubleValue = 4;
-        string stringValue = 5;
+        uint32 uintValue = 4;
+        float doubleValue = 5;
+        string stringValue = 6;
     }
 }
 
@@ -49,6 +52,13 @@ message _TestClearIOS {
 }
 
 message _TestFreeMemory {
+}
+
+message _TestSetClockOffset {
+    uint32 value = 1;
+}
+
+message _TestGetMillis {
 }
 
 message _TestResetAPI {

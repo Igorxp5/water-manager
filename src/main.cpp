@@ -4,6 +4,7 @@
 #include <pb_common.h>
 
 #include "API.h"
+#include "Clock.h"
 #include "IOInterface.h"
 #include "api.pb.c"
 
@@ -17,12 +18,14 @@
 const unsigned int READ_TIMEOUT = 2500; //Miliseconds
 
 API* api;
+Clock* readerTimer;
 HardwareSerial* apiSerial = &Serial;
 
 void setup() {
     apiSerial->begin(9600);
     apiSerial->setTimeout(READ_TIMEOUT);
     api = new API();
+    readerTimer = new Clock();
 }
 
 /*
@@ -51,8 +54,6 @@ unsigned int read = 0;
 byte messageLengthBuffer[2] = {0, 0};
 byte messageLengthBufferReadIndex = 0;
 unsigned int messageLength;
-
-unsigned long lastReadTime;
 
 Request request = Request_init_zero;
 Response response = Response_init_zero;
@@ -222,6 +223,8 @@ void handleAPIRequest() {
         api->setWaterTankVolumeFactor(request.message.setWaterTankVolumeFactor.waterTankName, request.message.setWaterTankVolumeFactor.value);
     } else if (request.which_message == Request_setWaterTankPressureFactor_tag) {
         api->setWaterTankPressureFactor(request.message.setWaterTankPressureFactor.waterTankName, request.message.setWaterTankPressureFactor.value);
+    } else if (request.which_message == Request_fillWaterTank_tag) {
+        api->fillWaterTank(request.message.fillWaterTank.waterTankName, request.message.fillWaterTank.enabled, request.message.fillWaterTank.force);
     } else if (request.which_message == Request_setMode_tag) {
         api->setOperationMode(request.message.setMode.mode);
     } else if (request.which_message == Request_getMode_tag) {
@@ -323,6 +326,14 @@ void handleTestRequest() {
         sendOkTestResponse(testRequest.id);
     } else if (testRequest.which_message == _TestRequest_freeMemory_tag) {
         sendOkTestResponse(testRequest.id, freeMemory());
+    } else if (testRequest.which_message == _TestRequest_setClockOffset_tag) {
+        Clock::setClockOffset(testRequest.message.setClockOffset.value);
+        sendOkTestResponse(testRequest.id);
+    } else if (testRequest.which_message == _TestRequest_getMillis_tag) {
+        testResponse.has_message = true;
+        testResponse.message.which_value = _TestResponseValue_uintValue_tag;
+        testResponse.message.value.uintValue = Clock::currentMillis(); 
+        sendOkTestResponse(testRequest.id);
     } else if (testRequest.which_message == _TestRequest_resetAPI_tag) {
         api->reset();
         sendOkTestResponse(testRequest.id);
@@ -348,12 +359,7 @@ void loop() {
             requestBuffer[read] = apiSerial->read();
             read += 1;
         }
-        lastReadTime = millis();
-    }
-
-    if (lastReadTime > millis()) {
-        //Long Overflow
-        lastReadTime = millis(); //Give more time to read the data
+        readerTimer->startTimer();
     }
 
     if (read != 0 && read == messageLength) {
@@ -380,7 +386,7 @@ void loop() {
 
         freeRequestBuffer();
         freeResponseBuffer();
-    } else if (messageType != 0 && millis() - lastReadTime >= READ_TIMEOUT) {
+    } else if (messageType != 0 && readerTimer->getElapsedTime() >= READ_TIMEOUT) {
         sendErrorResponse(0, "Truncated message received");
         freeRequestBuffer();
         freeResponseBuffer();

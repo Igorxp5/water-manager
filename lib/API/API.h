@@ -36,6 +36,7 @@ class API
         unsigned int getTotalWaterTanks();
         void removeWaterSource(char* name);
         void removeWaterTank(char* name);
+        void fillWaterTank(char* name, bool enabled, bool force);
         void reset();
         void loop();
 

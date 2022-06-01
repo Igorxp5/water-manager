@@ -30,6 +30,12 @@ PB_BIND(_TestClearIOS, _TestClearIOS, AUTO)
 PB_BIND(_TestFreeMemory, _TestFreeMemory, AUTO)
 
 
+PB_BIND(_TestSetClockOffset, _TestSetClockOffset, AUTO)
+
+
+PB_BIND(_TestGetMillis, _TestGetMillis, AUTO)
+
+
 PB_BIND(_TestResetAPI, _TestResetAPI, AUTO)
 
 

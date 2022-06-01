@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ntest.proto\"\x89\x02\n\x0c_TestRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\"\n\x08\x63reateIO\x18\x02 \x01(\x0b\x32\x0e._TestCreateIOH\x00\x12&\n\nsetIOValue\x18\x03 \x01(\x0b\x32\x10._TestSetIOValueH\x00\x12&\n\ngetIOValue\x18\x04 \x01(\x0b\x32\x10._TestGetIOValueH\x00\x12\"\n\x08\x63learIOs\x18\x05 \x01(\x0b\x32\x0e._TestClearIOSH\x00\x12&\n\nfreeMemory\x18\x06 \x01(\x0b\x32\x10._TestFreeMemoryH\x00\x12\"\n\x08resetAPI\x18\x07 \x01(\x0b\x32\x0e._TestResetAPIH\x00\x42\t\n\x07message\"t\n\x12_TestResponseValue\x12\x13\n\tboolValue\x18\x02 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x03 \x01(\x05H\x00\x12\x15\n\x0b\x64oubleValue\x18\x04 \x01(\x02H\x00\x12\x15\n\x0bstringValue\x18\x05 \x01(\tH\x00\x42\x07\n\x05value\"P\n\r_TestResponse\x12\n\n\x02id\x18\x01 \x01(\x04\x12$\n\x07message\x18\x02 \x01(\x0b\x32\x13._TestResponseValue\x12\r\n\x05\x65rror\x18\x03 \x01(\x08\"f\n\r_TestCreateIO\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12#\n\x04type\x18\x02 \x01(\x0e\x32\x15._TestCreateIO.IOType\"#\n\x06IOType\x12\x0b\n\x07\x44IGITAL\x10\x00\x12\x0c\n\x08\x41NALOGIC\x10\x01\"-\n\x0f_TestSetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\r\"\x1e\n\x0f_TestGetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\"\x0f\n\r_TestClearIOS\"\x11\n\x0f_TestFreeMemory\"\x0f\n\r_TestResetAPIb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ntest.proto\"\xdf\x02\n\x0c_TestRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\"\n\x08\x63reateIO\x18\x02 \x01(\x0b\x32\x0e._TestCreateIOH\x00\x12&\n\nsetIOValue\x18\x03 \x01(\x0b\x32\x10._TestSetIOValueH\x00\x12&\n\ngetIOValue\x18\x04 \x01(\x0b\x32\x10._TestGetIOValueH\x00\x12\"\n\x08\x63learIOs\x18\x05 \x01(\x0b\x32\x0e._TestClearIOSH\x00\x12&\n\nfreeMemory\x18\x06 \x01(\x0b\x32\x10._TestFreeMemoryH\x00\x12.\n\x0esetClockOffset\x18\x07 \x01(\x0b\x32\x14._TestSetClockOffsetH\x00\x12$\n\tgetMillis\x18\x08 \x01(\x0b\x32\x0f._TestGetMillisH\x00\x12\"\n\x08resetAPI\x18\t \x01(\x0b\x32\x0e._TestResetAPIH\x00\x42\t\n\x07message\"\x89\x01\n\x12_TestResponseValue\x12\x13\n\tboolValue\x18\x02 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x03 \x01(\x05H\x00\x12\x13\n\tuintValue\x18\x04 \x01(\rH\x00\x12\x15\n\x0b\x64oubleValue\x18\x05 \x01(\x02H\x00\x12\x15\n\x0bstringValue\x18\x06 \x01(\tH\x00\x42\x07\n\x05value\"P\n\r_TestResponse\x12\n\n\x02id\x18\x01 \x01(\x04\x12$\n\x07message\x18\x02 \x01(\x0b\x32\x13._TestResponseValue\x12\r\n\x05\x65rror\x18\x03 \x01(\x08\"f\n\r_TestCreateIO\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12#\n\x04type\x18\x02 \x01(\x0e\x32\x15._TestCreateIO.IOType\"#\n\x06IOType\x12\x0b\n\x07\x44IGITAL\x10\x00\x12\x0c\n\x08\x41NALOGIC\x10\x01\"-\n\x0f_TestSetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\r\"\x1e\n\x0f_TestGetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\"\x0f\n\r_TestClearIOS\"\x11\n\x0f_TestFreeMemory\"$\n\x13_TestSetClockOffset\x12\r\n\x05value\x18\x01 \x01(\r\"\x10\n\x0e_TestGetMillis\"\x0f\n\r_TestResetAPIb\x06proto3')
 
 
 
@@ -26,6 +26,8 @@ __TESTSETIOVALUE = DESCRIPTOR.message_types_by_name['_TestSetIOValue']
 __TESTGETIOVALUE = DESCRIPTOR.message_types_by_name['_TestGetIOValue']
 __TESTCLEARIOS = DESCRIPTOR.message_types_by_name['_TestClearIOS']
 __TESTFREEMEMORY = DESCRIPTOR.message_types_by_name['_TestFreeMemory']
+__TESTSETCLOCKOFFSET = DESCRIPTOR.message_types_by_name['_TestSetClockOffset']
+__TESTGETMILLIS = DESCRIPTOR.message_types_by_name['_TestGetMillis']
 __TESTRESETAPI = DESCRIPTOR.message_types_by_name['_TestResetAPI']
 __TESTCREATEIO_IOTYPE = __TESTCREATEIO.enum_types_by_name['IOType']
 _TestRequest = _reflection.GeneratedProtocolMessageType('_TestRequest', (_message.Message,), {
@@ -84,6 +86,20 @@ _TestFreeMemory = _reflection.GeneratedProtocolMessageType('_TestFreeMemory', (_
   })
 _sym_db.RegisterMessage(_TestFreeMemory)
 
+_TestSetClockOffset = _reflection.GeneratedProtocolMessageType('_TestSetClockOffset', (_message.Message,), {
+  'DESCRIPTOR' : __TESTSETCLOCKOFFSET,
+  '__module__' : 'test_pb2'
+  # @@protoc_insertion_point(class_scope:_TestSetClockOffset)
+  })
+_sym_db.RegisterMessage(_TestSetClockOffset)
+
+_TestGetMillis = _reflection.GeneratedProtocolMessageType('_TestGetMillis', (_message.Message,), {
+  'DESCRIPTOR' : __TESTGETMILLIS,
+  '__module__' : 'test_pb2'
+  # @@protoc_insertion_point(class_scope:_TestGetMillis)
+  })
+_sym_db.RegisterMessage(_TestGetMillis)
+
 _TestResetAPI = _reflection.GeneratedProtocolMessageType('_TestResetAPI', (_message.Message,), {
   'DESCRIPTOR' : __TESTRESETAPI,
   '__module__' : 'test_pb2'
@@ -95,23 +111,27 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   __TESTREQUEST._serialized_start=15
-  __TESTREQUEST._serialized_end=280
-  __TESTRESPONSEVALUE._serialized_start=282
-  __TESTRESPONSEVALUE._serialized_end=398
-  __TESTRESPONSE._serialized_start=400
-  __TESTRESPONSE._serialized_end=480
-  __TESTCREATEIO._serialized_start=482
-  __TESTCREATEIO._serialized_end=584
-  __TESTCREATEIO_IOTYPE._serialized_start=549
-  __TESTCREATEIO_IOTYPE._serialized_end=584
-  __TESTSETIOVALUE._serialized_start=586
-  __TESTSETIOVALUE._serialized_end=631
-  __TESTGETIOVALUE._serialized_start=633
-  __TESTGETIOVALUE._serialized_end=663
-  __TESTCLEARIOS._serialized_start=665
-  __TESTCLEARIOS._serialized_end=680
-  __TESTFREEMEMORY._serialized_start=682
-  __TESTFREEMEMORY._serialized_end=699
-  __TESTRESETAPI._serialized_start=701
-  __TESTRESETAPI._serialized_end=716
+  __TESTREQUEST._serialized_end=366
+  __TESTRESPONSEVALUE._serialized_start=369
+  __TESTRESPONSEVALUE._serialized_end=506
+  __TESTRESPONSE._serialized_start=508
+  __TESTRESPONSE._serialized_end=588
+  __TESTCREATEIO._serialized_start=590
+  __TESTCREATEIO._serialized_end=692
+  __TESTCREATEIO_IOTYPE._serialized_start=657
+  __TESTCREATEIO_IOTYPE._serialized_end=692
+  __TESTSETIOVALUE._serialized_start=694
+  __TESTSETIOVALUE._serialized_end=739
+  __TESTGETIOVALUE._serialized_start=741
+  __TESTGETIOVALUE._serialized_end=771
+  __TESTCLEARIOS._serialized_start=773
+  __TESTCLEARIOS._serialized_end=788
+  __TESTFREEMEMORY._serialized_start=790
+  __TESTFREEMEMORY._serialized_end=807
+  __TESTSETCLOCKOFFSET._serialized_start=809
+  __TESTSETCLOCKOFFSET._serialized_end=845
+  __TESTGETMILLIS._serialized_start=847
+  __TESTGETMILLIS._serialized_end=863
+  __TESTRESETAPI._serialized_start=865
+  __TESTRESETAPI._serialized_end=880
 # @@protoc_insertion_point(module_scope)

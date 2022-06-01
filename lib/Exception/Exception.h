@@ -54,6 +54,7 @@ extern const InvalidRequest* WATER_SOURCE_NOT_FOUND;
 extern const InvalidRequest* WATER_SOURCE_ALREADY_REGISTERED;
 
 extern const InvalidRequest* CANNOT_HANDLE_WATER_SOURCE_IN_AUTO;
+extern const InvalidRequest* CANNOT_HANDLE_WATER_TANK_IN_AUTO;
 extern const InvalidRequest* CANNOT_ENABLE_WATER_SOURCE_DUE_MINIMUM_VOLUME;
 extern const InvalidRequest* CANNOT_FILL_WATER_TANK_MAX_VOLUME;
 

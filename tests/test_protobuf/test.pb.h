@@ -24,6 +24,10 @@ typedef struct __TestFreeMemory {
     char dummy_field;
 } _TestFreeMemory;
 
+typedef struct __TestGetMillis { 
+    char dummy_field;
+} _TestGetMillis;
+
 typedef struct __TestResetAPI { 
     char dummy_field;
 } _TestResetAPI;
@@ -42,10 +46,15 @@ typedef struct __TestResponseValue {
     union {
         bool boolValue;
         int32_t intValue;
+        uint32_t uintValue;
         float doubleValue;
         char stringValue[100];
     } value; 
 } _TestResponseValue;
+
+typedef struct __TestSetClockOffset { 
+    uint32_t value; 
+} _TestSetClockOffset;
 
 typedef struct __TestSetIOValue { 
     uint32_t pin; 
@@ -61,6 +70,8 @@ typedef struct __TestRequest {
         _TestGetIOValue getIOValue;
         _TestClearIOS clearIOs;
         _TestFreeMemory freeMemory;
+        _TestSetClockOffset setClockOffset;
+        _TestGetMillis getMillis;
         _TestResetAPI resetAPI;
     } message; 
 } _TestRequest;
@@ -92,6 +103,8 @@ extern "C" {
 #define _TestGetIOValue_init_default             {0}
 #define _TestClearIOS_init_default               {0}
 #define _TestFreeMemory_init_default             {0}
+#define _TestSetClockOffset_init_default         {0}
+#define _TestGetMillis_init_default              {0}
 #define _TestResetAPI_init_default               {0}
 #define _TestRequest_init_zero                   {0, 0, {_TestCreateIO_init_zero}}
 #define _TestResponseValue_init_zero             {0, {0}}
@@ -101,6 +114,8 @@ extern "C" {
 #define _TestGetIOValue_init_zero                {0}
 #define _TestClearIOS_init_zero                  {0}
 #define _TestFreeMemory_init_zero                {0}
+#define _TestSetClockOffset_init_zero            {0}
+#define _TestGetMillis_init_zero                 {0}
 #define _TestResetAPI_init_zero                  {0}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -109,8 +124,10 @@ extern "C" {
 #define _TestGetIOValue_pin_tag                  1
 #define _TestResponseValue_boolValue_tag         2
 #define _TestResponseValue_intValue_tag          3
-#define _TestResponseValue_doubleValue_tag       4
-#define _TestResponseValue_stringValue_tag       5
+#define _TestResponseValue_uintValue_tag         4
+#define _TestResponseValue_doubleValue_tag       5
+#define _TestResponseValue_stringValue_tag       6
+#define _TestSetClockOffset_value_tag            1
 #define _TestSetIOValue_pin_tag                  1
 #define _TestSetIOValue_value_tag                2
 #define _TestRequest_id_tag                      1
@@ -119,7 +136,9 @@ extern "C" {
 #define _TestRequest_getIOValue_tag              4
 #define _TestRequest_clearIOs_tag                5
 #define _TestRequest_freeMemory_tag              6
-#define _TestRequest_resetAPI_tag                7
+#define _TestRequest_setClockOffset_tag          7
+#define _TestRequest_getMillis_tag               8
+#define _TestRequest_resetAPI_tag                9
 #define _TestResponse_id_tag                     1
 #define _TestResponse_message_tag                2
 #define _TestResponse_error_tag                  3
@@ -132,7 +151,9 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (message,setIOValue,message.setIOValue),   3)
 X(a, STATIC,   ONEOF,    MESSAGE,  (message,getIOValue,message.getIOValue),   4) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (message,clearIOs,message.clearIOs),   5) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (message,freeMemory,message.freeMemory),   6) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (message,resetAPI,message.resetAPI),   7)
+X(a, STATIC,   ONEOF,    MESSAGE,  (message,setClockOffset,message.setClockOffset),   7) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (message,getMillis,message.getMillis),   8) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (message,resetAPI,message.resetAPI),   9)
 #define _TestRequest_CALLBACK NULL
 #define _TestRequest_DEFAULT NULL
 #define _TestRequest_message_createIO_MSGTYPE _TestCreateIO
@@ -140,13 +161,16 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (message,resetAPI,message.resetAPI),   7)
 #define _TestRequest_message_getIOValue_MSGTYPE _TestGetIOValue
 #define _TestRequest_message_clearIOs_MSGTYPE _TestClearIOS
 #define _TestRequest_message_freeMemory_MSGTYPE _TestFreeMemory
+#define _TestRequest_message_setClockOffset_MSGTYPE _TestSetClockOffset
+#define _TestRequest_message_getMillis_MSGTYPE _TestGetMillis
 #define _TestRequest_message_resetAPI_MSGTYPE _TestResetAPI
 
 #define _TestResponseValue_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    BOOL,     (value,boolValue,value.boolValue),   2) \
 X(a, STATIC,   ONEOF,    INT32,    (value,intValue,value.intValue),   3) \
-X(a, STATIC,   ONEOF,    FLOAT,    (value,doubleValue,value.doubleValue),   4) \
-X(a, STATIC,   ONEOF,    STRING,   (value,stringValue,value.stringValue),   5)
+X(a, STATIC,   ONEOF,    UINT32,   (value,uintValue,value.uintValue),   4) \
+X(a, STATIC,   ONEOF,    FLOAT,    (value,doubleValue,value.doubleValue),   5) \
+X(a, STATIC,   ONEOF,    STRING,   (value,stringValue,value.stringValue),   6)
 #define _TestResponseValue_CALLBACK NULL
 #define _TestResponseValue_DEFAULT NULL
 
@@ -185,6 +209,16 @@ X(a, STATIC,   SINGULAR, UINT32,   pin,               1)
 #define _TestFreeMemory_CALLBACK NULL
 #define _TestFreeMemory_DEFAULT NULL
 
+#define _TestSetClockOffset_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   value,             1)
+#define _TestSetClockOffset_CALLBACK NULL
+#define _TestSetClockOffset_DEFAULT NULL
+
+#define _TestGetMillis_FIELDLIST(X, a) \
+
+#define _TestGetMillis_CALLBACK NULL
+#define _TestGetMillis_DEFAULT NULL
+
 #define _TestResetAPI_FIELDLIST(X, a) \
 
 #define _TestResetAPI_CALLBACK NULL
@@ -198,6 +232,8 @@ extern const pb_msgdesc_t _TestSetIOValue_msg;
 extern const pb_msgdesc_t _TestGetIOValue_msg;
 extern const pb_msgdesc_t _TestClearIOS_msg;
 extern const pb_msgdesc_t _TestFreeMemory_msg;
+extern const pb_msgdesc_t _TestSetClockOffset_msg;
+extern const pb_msgdesc_t _TestGetMillis_msg;
 extern const pb_msgdesc_t _TestResetAPI_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -209,6 +245,8 @@ extern const pb_msgdesc_t _TestResetAPI_msg;
 #define _TestGetIOValue_fields &_TestGetIOValue_msg
 #define _TestClearIOS_fields &_TestClearIOS_msg
 #define _TestFreeMemory_fields &_TestFreeMemory_msg
+#define _TestSetClockOffset_fields &_TestSetClockOffset_msg
+#define _TestGetMillis_fields &_TestGetMillis_msg
 #define _TestResetAPI_fields &_TestResetAPI_msg
 
 /* Maximum encoded size of messages (where known) */
@@ -216,10 +254,12 @@ extern const pb_msgdesc_t _TestResetAPI_msg;
 #define _TestCreateIO_size                       8
 #define _TestFreeMemory_size                     0
 #define _TestGetIOValue_size                     6
+#define _TestGetMillis_size                      0
 #define _TestRequest_size                        20
 #define _TestResetAPI_size                       0
 #define _TestResponseValue_size                  101
 #define _TestResponse_size                       116
+#define _TestSetClockOffset_size                 6
 #define _TestSetIOValue_size                     12
 
 #ifdef __cplusplus

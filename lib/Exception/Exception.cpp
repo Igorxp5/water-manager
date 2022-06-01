@@ -24,6 +24,9 @@ const InvalidRequest* WATER_SOURCE_ALREADY_REGISTERED = new InvalidRequest(
 const InvalidRequest* CANNOT_HANDLE_WATER_SOURCE_IN_AUTO = new InvalidRequest(
     "Cannot handle a water source in auto mode");
 
+const InvalidRequest* CANNOT_HANDLE_WATER_TANK_IN_AUTO = new InvalidRequest(
+    "Cannot handle a water tank in auto mode");
+
 const InvalidRequest* CANNOT_ENABLE_WATER_SOURCE_DUE_MINIMUM_VOLUME = new InvalidRequest(
     "Cannot open a water source, the underlying water tank is under the minimum threshold");
 

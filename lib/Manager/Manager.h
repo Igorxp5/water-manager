@@ -7,6 +7,7 @@
 #include "WaterTank.h"
 #include "OperationMode.h"
 #include "IOInterface.h"
+#include "Clock.h"
 
 const byte MAX_NAME_LENGTH = 20;
 const byte MAX_WATER_SOURCES = 10;
@@ -39,7 +40,7 @@ class Manager
         bool isIOInterfaceDependency(IOInterface* io);
         WaterSource* unregisterWaterSource(char* name);
         WaterTank* unregisterWaterTank(char* name);
-        void fillWaterTank(char* name);
+        void fillWaterTank(char* name, bool force);
         void stopFillingWaterTank(char* name);
         void loop();
         void reset();
@@ -52,7 +53,7 @@ class Manager
         OperationMode mode = MANUAL;
         unsigned int totalWaterTanks = 0;
         unsigned int totalWaterSources = 0;
-        unsigned long lastLoopTime = 0;
+        Clock* timer;
         unsigned int waterTankErrorIndex = 0;
         const RuntimeError* waterTanksLoopErrors[MAX_WATER_TANKS];
 

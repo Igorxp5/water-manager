@@ -176,6 +176,14 @@ void API::removeWaterTank(char* name) {
     }
 }
 
+void API::fillWaterTank(char* name, bool enabled, bool force) {
+    if (enabled) {
+        this->manager->fillWaterTank(name, force);
+    } else {
+        this->manager->stopFillingWaterTank(name);
+    }
+}
+
 void API::reset() {
     this->manager->reset();
 }

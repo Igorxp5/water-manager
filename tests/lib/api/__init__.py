@@ -84,6 +84,9 @@ class APIClient:
     def get_water_tank(self, name: str):
         return self.send_request('getWaterTank', waterTankName=name)
 
+    def fill_water_tank(self, name: str, enabled: bool, force: bool):
+        return self.send_request('fillWaterTank', waterTankName=name, enabled=enabled, force=force)
+
     def set_operation_mode(self, mode: OperationMode):
         return self.send_request('setMode', mode=mode.value)
     
@@ -103,6 +106,12 @@ class APIClient:
 
     def clear_io(self):
         return self.send_request('clearIOs', request_class=_TestRequest)
+
+    def set_clock_offset(self, value: int):
+        return self.send_request('setClockOffset', value=value, request_class=_TestRequest)
+    
+    def get_millis(self):
+        return self.send_request('getMillis', request_class=_TestRequest, response_type=int)
 
     def get_free_memory(self):
         return self.send_request('freeMemory', request_class=_TestRequest, response_type=int)
