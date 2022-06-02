@@ -1,4 +1,4 @@
-from typing import Dict, Type
+from typing import Dict, Type, Any, Union
 
 from google.protobuf.pyext._message import RepeatedCompositeContainer
 
@@ -38,7 +38,7 @@ class WaterTankStateParser(APIResponseMessageParser):
     def parse(raw_field):
         field = APIResponse.parse_dict_field(raw_field)
         field.setdefault('pressureSensorPin', 0)
-        field.setdefault('isFilling', False)
+        field.setdefault('filling', False)
         field.setdefault('volumeFactor', 0)
         field.setdefault('pressureFactor', 0)
         field.setdefault('minimumVolume', 0)
@@ -52,12 +52,6 @@ class WaterTankStateParser(APIResponseMessageParser):
 
 
 class APIResponse:
-    ERROR_EXCEPTIONS: Dict[str, Type[APIException]] = {
-        'True': APIException,
-        '0': APIException,
-        '1': APIRuntimeError,
-        '2': APIInvalidRequest
-    }
     GET_FIRST_FIELD_PARSER: APIResponseMessageParser = GetFirstFieldParser()
     MESSAGE_PARSERS: Dict[str, APIResponseMessageParser] = {
         '_TestResponseValue': GET_FIRST_FIELD_PARSER,
@@ -67,10 +61,9 @@ class APIResponse:
         'WaterTankState': WaterTankStateParser()
     }
 
-    def __init__(self, id_: int, message: str, error: APIException = None):
+    def __init__(self, id_: int, message: Any):
         self.id = id_
         self.message = message
-        self.error = error
     
     def __repr__(self):
         return f'{self.__class__.__name__}({self.id}, {repr(self.message)}, {repr(self.error)}))'
@@ -79,10 +72,11 @@ class APIResponse:
     def parse(response_pb):
         fields = APIResponse.parse_dict_field(response_pb)
         id_ = fields.get('id', 0)
-        message = fields.get('message', '')
+        message = fields.get('message', None)
         error = fields.get('error', None)
-        error = APIResponse.ERROR_EXCEPTIONS.get(str(error))
-        return APIResponse(id_, message, error)
+        if error is not None:
+            return APIErrorResponse.parse_error(id_, message, error)
+        return APIResponse(id_, message)
     
     @staticmethod
     def parse_field(raw_field):
@@ -104,3 +98,24 @@ class APIResponse:
             field_name, field_value = APIResponse.parse_field(field)
             fields[field_name] = field_value
         return fields
+
+
+class APIErrorResponse(APIResponse):
+    EXCEPTIONS_TYPES: Dict[str, Type[APIException]] = {
+        0: APIException,
+        1: APIRuntimeError,
+        2: APIInvalidRequest
+    }
+
+    def __init__(self, id_: int, message: str, exception_type: Type, arg: str=None):
+        super().__init__(id_, message)
+        self.exception_type = exception_type
+        self.arg = arg
+
+    @staticmethod
+    def parse_error(id_: int, message: str, error: Union[bool, dict]):
+        if isinstance(error, bool):  # handling _TestResponse
+            return APIErrorResponse(id_, message, APIException)
+        message = error.message
+        exception_type = APIErrorResponse.EXCEPTIONS_TYPES.get(error.type, 0)
+        return APIErrorResponse(id_, message, exception_type, error.arg)

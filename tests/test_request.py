@@ -42,7 +42,7 @@ async def test_error_decode_request(api_client: APIClient, reset_api_timeout):
     response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.id == 0
-    assert response.error is APIException
+    assert response.exception_type is APIException
     assert response.message == 'Failed to decode the request'
 
 
@@ -62,7 +62,7 @@ async def test_handle_after_truncated_messages(api_client: APIClient):
         response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
         assert response.id == 0
-        assert response.error is APIException
+        assert response.exception_type is APIException
         assert response.message == 'Truncated message received'
 
     water_sources = await api_client.get_water_source_list()
@@ -80,7 +80,42 @@ async def test_send_large_invalid_request(api_client: APIClient):
     raise NotImplementedError
 
 
-@pytest.mark.xfail
 async def test_keep_receiving_request_after_50_days(api_client: APIClient):
     """Platform should keep receiving requests after 50 days (long overflow)"""
-    raise NotImplementedError
+    MAX_UINT32 = 4294967295
+
+    current_time = await api_client.get_millis()
+
+    offset = MAX_UINT32 - current_time
+
+    await api_client.set_clock_offset(offset)
+
+    assert await api_client.get_millis() < 60 * 1000
+
+    water_source_name = 'Water source'
+
+    await api_client.create_water_source(water_source_name, 10)
+
+    water_source = await api_client.get_water_source(water_source_name)
+
+    assert water_source['name'] == water_source_name 
+
+
+async def test_reset_with_water_tank_and_source_dependency(api_client: APIClient):
+    """Platform should be able to perform reset even when there are water tank/source dependencies"""
+    water_tank_name_1, pressure_sensor_1, volume_factor_1, pressure_factor_1 = 'Bottom tank', 1, 1, 1
+    water_source_name_1, water_source_pin_1 = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name_1, water_source_pin_1)
+    await api_client.create_water_tank(water_tank_name_1, pressure_sensor_1, volume_factor_1, pressure_factor_1, water_source_name_1)
+    
+    water_tank_name_2, pressure_sensor_2, volume_factor_2, pressure_factor_2 = 'Upper tank', 2, 1, 1
+    water_source_name_2, water_source_pin_2 = 'Water pump', 16
+
+    await api_client.create_water_source(water_source_name_2, water_source_pin_2, water_tank_name_1)
+    await api_client.create_water_tank(water_tank_name_2, pressure_sensor_2, volume_factor_2, pressure_factor_2, water_source_name_2)
+
+    await api_client.reset()
+
+    assert await api_client.get_water_source_list() == []
+    assert await api_client.get_water_tank_list() == []

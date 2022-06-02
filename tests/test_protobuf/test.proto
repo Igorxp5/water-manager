@@ -10,7 +10,7 @@ message _TestRequest {
         _TestFreeMemory freeMemory = 6;
         _TestSetClockOffset setClockOffset = 7;
         _TestGetMillis getMillis = 8;
-        _TestResetAPI resetAPI = 9;
+        _TestResetClock resetClock = 9;
     }
 }
 
@@ -61,5 +61,5 @@ message _TestSetClockOffset {
 message _TestGetMillis {
 }
 
-message _TestResetAPI {
+message _TestResetClock {
 }

@@ -36,7 +36,7 @@ PB_BIND(_TestSetClockOffset, _TestSetClockOffset, AUTO)
 PB_BIND(_TestGetMillis, _TestGetMillis, AUTO)
 
 
-PB_BIND(_TestResetAPI, _TestResetAPI, AUTO)
+PB_BIND(_TestResetClock, _TestResetClock, AUTO)
 
 
 

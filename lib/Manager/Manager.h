@@ -18,6 +18,7 @@ class Manager
 {
     public:
         Manager();
+        ~Manager();
 
         OperationMode getOperationMode();
         void setOperationMode(OperationMode mode);
@@ -43,7 +44,6 @@ class Manager
         void fillWaterTank(char* name, bool force);
         void stopFillingWaterTank(char* name);
         void loop();
-        void reset();
 
     private:
         WaterTank* waterTanks[MAX_WATER_TANKS];
@@ -53,7 +53,7 @@ class Manager
         OperationMode mode = MANUAL;
         unsigned int totalWaterTanks = 0;
         unsigned int totalWaterSources = 0;
-        Clock* timer;
+        Clock* waterTanksErrorsTimer;
         unsigned int waterTankErrorIndex = 0;
         const RuntimeError* waterTanksLoopErrors[MAX_WATER_TANKS];
 

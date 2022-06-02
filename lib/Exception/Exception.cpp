@@ -1,6 +1,7 @@
 #include "Exception.h"
 
 const Exception* Exception::thrownException = NULL;
+char* Exception::thrownExceptionArg = NULL;
 
 const InvalidRequest* CANNOT_ENABLE_WATER_SOURCE = new InvalidRequest(
     "Cannot open water source when the water tank is under the minimum threshold");
@@ -13,7 +14,7 @@ const InvalidRequest* WATER_TANK_NOT_FOUND = new InvalidRequest(
 const InvalidRequest* WATER_TANK_ALREADY_REGISTERED = new InvalidRequest(
     "There is already a water tank with that name registered");
 
-const RuntimeError* WATER_TANK_STOPPED_TO_FILL = new RuntimeError("The water tank has stopped to fill");
+const RuntimeError* WATER_TANK_HAS_STOPPED_TO_FILL = new RuntimeError("The water tank has stopped to fill");
 const RuntimeError* WATER_TANK_IS_NOT_FILLING = new RuntimeError("The water tank is not filling");
 
 const InvalidRequest* WATER_SOURCE_NOT_FOUND = new InvalidRequest(
@@ -45,16 +46,16 @@ const InvalidRequest* CANNOT_REMOVE_WATER_TANK_DEPENDENCY = new InvalidRequest(
 
 const Exception* PIN_NOT_FOUND = new InvalidRequest("Pin is not defined in an IOInterface object");
 
-Exception::Exception(const char* message, unsigned int exceptionType) {
+Exception::Exception(const char* message, ErrorType exceptionType) {
     this->message = message;
     this->exceptionType = exceptionType;
 }
 
-RuntimeError::RuntimeError(const char* message) : Exception(message, RUNTIME_ERROR_EXCEPTION_TYPE) {
+RuntimeError::RuntimeError(const char* message) : Exception(message, RUNTIME_ERROR) {
 
 }
 
-InvalidRequest::InvalidRequest(const char* message) : Exception(message, INVALID_REQUEST_EXCEPTION_TYPE) {
+InvalidRequest::InvalidRequest(const char* message) : Exception(message, INVALID_REQUEST) {
 
 }
 
@@ -62,8 +63,13 @@ const char* Exception::getMessage() {
 	return this->message;
 }
 
-void Exception::throwException(const Exception* exception) {
+void Exception::throwException(const Exception* exception, char* arg) {
 	Exception::thrownException = exception;
+    Exception::thrownExceptionArg = arg;
+}
+
+void Exception::throwException(const Exception* exception) {
+	Exception::throwException(exception, NULL);
 }
 
 void Exception::clearException() {
@@ -76,10 +82,14 @@ const Exception* Exception::popException() {
     return exception;
 }
 
+char* Exception::popExceptionArg() {
+    return Exception::thrownExceptionArg;
+}
+
 bool Exception::hasException() {
     return Exception::thrownException != NULL;
 }
 
-unsigned int Exception::getExceptionType() {
+ErrorType Exception::getExceptionType() {
     return this->exceptionType;
 }

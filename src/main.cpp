@@ -96,35 +96,40 @@ void sendResponse() {
     }
 }
 
-void sendErrorResponse(unsigned int requestId, const char* error) {
+void sendErrorResponse(unsigned int requestId, const char* error, char* arg) {
     response.id = requestId;
-    response.has_error = true;
-    response.has_message = true;
-    response.message.has_value = true;
-    response.message.value.which_content = PrimitiveValue_stringValue_tag;
-    strncpy(response.message.value.content.stringValue, error, MAX_ERROR_LENGTH);
+    response.which_content = Response_error_tag;
+    strncpy(response.content.error.message, error, MAX_ERROR_LENGTH);
+    if (arg != NULL) {
+        strncpy(response.content.error.arg, arg, MAX_NAME_LENGTH);
+    }
     sendResponse();
 }
 
-void sendErrorResponse(unsigned int requestId, const Exception* error) {
+void sendErrorResponse(unsigned int requestId, const RuntimeError* error, char* arg) {
+    response.content.error.type = Error_Exception_RUNTIME_ERROR;
     const char* message = ((Exception*) error)->getMessage();
-    sendErrorResponse(requestId, message);
+    sendErrorResponse(requestId, message, arg);
+    delete error;
 }
 
 void sendErrorResponse(unsigned int requestId, const RuntimeError* error) {
-    response.error = Response_Exception_RUNTIME_ERROR;
-    const char* message = ((Exception*) error)->getMessage();
-    sendErrorResponse(requestId, message);
+    sendErrorResponse(requestId, error, NULL);
+}
+
+void sendErrorResponse(unsigned int requestId, const char* error) {
+    sendErrorResponse(requestId, error, NULL);
 }
 
 void sendErrorResponse(unsigned int requestId, const InvalidRequest* error) {
-    response.error = Response_Exception_INVALID_REQUEST;
+    response.content.error.type = Error_Exception_INVALID_REQUEST;
     const char* message = ((Exception*) error)->getMessage();
     sendErrorResponse(requestId, message);
 }
 
 void sendOkResponse(unsigned int requestId) {
     response.id = requestId;
+    response.which_content = Response_message_tag;
     sendResponse();
 }
 
@@ -139,13 +144,12 @@ void handleAPIRequest() {
     } else if (request.which_message == Request_getWaterSourceList_tag) {
         char** waterSourceList = api->getWaterSourceList();
         unsigned int totalWaterSources = api->getTotalWaterSources();
-        response.has_message = true;
-        response.message.listValue_count = totalWaterSources;
+        response.content.message.listValue_count = totalWaterSources;
         PrimitiveValue value = PrimitiveValue_init_zero;
         for (unsigned int i = 0; i < totalWaterSources; i++) {
             value.which_content = PrimitiveValue_stringValue_tag;
             strncpy(value.content.stringValue, waterSourceList[i], MAX_NAME_LENGTH);
-            response.message.listValue[i] = value;
+            response.content.message.listValue[i] = value;
         }
         free(waterSourceList);
     } else if (request.which_message == Request_removeWaterSource_tag) {
@@ -155,8 +159,7 @@ void handleAPIRequest() {
     } else if (request.which_message == Request_getWaterSource_tag) {
         WaterSource* waterSource = api->getWaterSource(request.message.getWaterSource.waterSourceName);
         if (waterSource != NULL) {
-            response.has_message = true;
-            response.message.has_waterSource = true;
+            response.content.message.has_waterSource = true;
             WaterSourceState waterSourceState = WaterSourceState_init_zero;
             strncpy(waterSourceState.name, request.message.getWaterSource.waterSourceName, MAX_NAME_LENGTH);
             waterSourceState.pin = waterSource->getPin();
@@ -165,7 +168,7 @@ void handleAPIRequest() {
                 waterSourceState.has_sourceWaterTank = true;
                 strncpy(waterSourceState.sourceWaterTank, api->getWaterTankName(waterSource->getWaterTank()), MAX_NAME_LENGTH);
             }
-            response.message.waterSource = waterSourceState;
+            response.content.message.waterSource = waterSourceState;
         }
     } if (request.which_message == Request_createWaterTank_tag) {
         if (request.message.createWaterTank.has_waterSourceName) {
@@ -179,13 +182,12 @@ void handleAPIRequest() {
     } else if (request.which_message == Request_getWaterTankList_tag) {
         char** waterTankList = api->getWaterTankList();
         unsigned int totalWaterTanks = api->getTotalWaterTanks();
-        response.has_message = true;
-        response.message.listValue_count = totalWaterTanks;
+        response.content.message.listValue_count = totalWaterTanks;
         PrimitiveValue value = PrimitiveValue_init_zero;
         for (unsigned int i = 0; i < totalWaterTanks; i++) {
             value.which_content = PrimitiveValue_stringValue_tag;
             strncpy(value.content.stringValue, waterTankList[i], MAX_NAME_LENGTH);
-            response.message.listValue[i] = value;
+            response.content.message.listValue[i] = value;
         }
         free(waterTankList);
     } else if (request.which_message == Request_removeWaterTank_tag) {
@@ -193,12 +195,11 @@ void handleAPIRequest() {
     } else if (request.which_message == Request_getWaterTank_tag) {
         WaterTank* waterTank = api->getWaterTank(request.message.getWaterTank.waterTankName);
         if (waterTank != NULL) {
-            response.has_message = true;
-            response.message.has_waterTank = true;
+            response.content.message.has_waterTank = true;
             WaterTankState waterTankState = WaterTankState_init_zero;
             strncpy(waterTankState.name, request.message.getWaterTank.waterTankName, MAX_NAME_LENGTH);
             waterTankState.pressureSensorPin = waterTank->getPressureSensorPin();
-            waterTankState.isFilling = waterTank->isFilling();
+            waterTankState.filling = waterTank->isFilling();
             waterTankState.volumeFactor = waterTank->volumeFactor;
             waterTankState.pressureFactor = waterTank->pressureFactor;
             waterTankState.minimumVolume = waterTank->minimumVolume;
@@ -211,7 +212,7 @@ void handleAPIRequest() {
                 waterTankState.has_waterSource = true;
                 strncpy(waterTankState.waterSource, api->getWaterSourceName(waterTank->getWaterSource()), MAX_NAME_LENGTH);
             }
-            response.message.waterTank = waterTankState;
+            response.content.message.waterTank = waterTankState;
         }
     } else if (request.which_message == Request_setWaterTankMinimumVolume_tag) {
         api->setWaterTankMinimumVolume(request.message.setWaterTankMinimumVolume.waterTankName, request.message.setWaterTankMinimumVolume.value);
@@ -230,23 +231,22 @@ void handleAPIRequest() {
     } else if (request.which_message == Request_getMode_tag) {
         byte mode = api->getOperationMode();
         if (!Exception::hasException()) {
-            response.has_message = true;
-            response.message.has_value = true;
-            response.message.value.which_content = PrimitiveValue_intValue_tag;
-            response.message.value.content.intValue = mode;
+            response.content.message.has_value = true;
+            response.content.message.value.which_content = PrimitiveValue_intValue_tag;
+            response.content.message.value.content.intValue = mode;
         }
+    } else if (request.which_message == Request_reset_tag) {
+        api->reset();
     }
 
     if (!Exception::hasException()) {
         sendOkResponse(request.id);
     } else {
         Exception* exception = (Exception*) Exception::popException();
-        if (exception->getExceptionType() == RUNTIME_ERROR_EXCEPTION_TYPE) {
+        if (exception->getExceptionType() == RUNTIME_ERROR) {
             sendErrorResponse(request.id, (const RuntimeError*) exception);
-        } else if (exception->getExceptionType() == INVALID_REQUEST_EXCEPTION_TYPE) {
+        } else if (exception->getExceptionType() == INVALID_REQUEST) {
             sendErrorResponse(request.id, (const InvalidRequest*) exception);
-        } else {
-            sendErrorResponse(request.id, (const Exception*) exception);
         }
     }
 }
@@ -334,8 +334,8 @@ void handleTestRequest() {
         testResponse.message.which_value = _TestResponseValue_uintValue_tag;
         testResponse.message.value.uintValue = Clock::currentMillis(); 
         sendOkTestResponse(testRequest.id);
-    } else if (testRequest.which_message == _TestRequest_resetAPI_tag) {
-        api->reset();
+    } else if (testRequest.which_message == _TestRequest_resetClock_tag) {
+        Clock::setClockOffset(0);
         sendOkTestResponse(testRequest.id);
     }
 }
@@ -396,6 +396,7 @@ void loop() {
 
     if (Exception::hasException()) {
         Exception* exception = (Exception*) Exception::popException();
-        sendErrorResponse(0, (const RuntimeError*) exception);
+        char* exceptionArg = Exception::popExceptionArg();
+        sendErrorResponse(0, (const RuntimeError*) exception, exceptionArg);
     }
 }

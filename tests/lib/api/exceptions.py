@@ -1,5 +1,6 @@
 class APIException(RuntimeError):
-    def __init__(self, message, response=None):
+    def __init__(self, message, arg=None, response=None):
+        self.arg = arg
         self.response = response
         super().__init__(message)
 

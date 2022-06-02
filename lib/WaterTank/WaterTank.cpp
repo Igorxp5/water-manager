@@ -22,6 +22,12 @@ WaterTank::WaterTank(IOInterface* pressureSensor, float volumeFactor, float pres
 
 }
 
+WaterTank::~WaterTank() {
+    delete this->fillingTimer;
+    delete this->pressureChangingTimer;
+    delete this->fillingCallsProtectionTimer;
+}
+
 float WaterTank::getVolume() {
     return max(0, (this->getPressure() * volumeFactor) - this->zeroVolumePressure);
 }
@@ -66,7 +72,7 @@ void WaterTank::stopFilling() {
 }
 
 void WaterTank::loop() {
-    if (this->waterSource != NULL) {
+    if (this->waterSource == NULL) {
         return;
     }
 
@@ -82,7 +88,7 @@ void WaterTank::loop() {
             if (this->pressureChangingTimer->hasStarted()) {
                 if (this->pressureChangingTimer->getElapsedTime() >= CHANGING_INTERVAL) {
                     //Volume/Presure is not changing anymore
-                    error = WATER_TANK_STOPPED_TO_FILL;
+                    error = WATER_TANK_HAS_STOPPED_TO_FILL;
 
                     this->pressureChangingTimer->startTimer();
                 }
@@ -97,12 +103,11 @@ void WaterTank::loop() {
     if (this->fillingCallsProtectionTimer->getElapsedTime() > FILLING_CALLS_PROTECTION_TIME) {
         if ((!this->waterSource->canEnable() || this->getVolume() >= this->maxVolume) && this->waterSource->isEnabled()) {
             this->waterSource->disable();
-        } else if (this->getVolume() <= this->minimumVolume && !this->waterSource->isEnabled()) {
+        } else if ((this->waterSource->canEnable() && this->getVolume() <= this->minimumVolume) && !this->waterSource->isEnabled()) {
             this->fill(false);
         }
         this->fillingCallsProtectionTimer->startTimer();
     }
-    
 
     Exception::throwException(error);
 }

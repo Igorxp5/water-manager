@@ -5,23 +5,30 @@
 
 const byte MAX_ERROR_LENGTH = 100;
 
+enum ErrorType {
+    GENERIC_ERROR, RUNTIME_ERROR, INVALID_REQUEST
+};
+
 class Exception
 {
     public:
-        Exception(const char* message, unsigned int exceptionType);
+        Exception(const char* message, ErrorType exceptionType);
 
         const char* getMessage();
-        unsigned int getExceptionType();
+        ErrorType getExceptionType();
 
         static void throwException(const Exception* exception);
+        static void throwException(const Exception* exception, char* arg);
         static const Exception* popException();
+        static char* popExceptionArg();
         static bool hasException();
         static void clearException();
     
     private:
         static const Exception* thrownException;
+        static char* thrownExceptionArg;
         const char* message;
-        unsigned int exceptionType;
+        ErrorType exceptionType;
 };
 
 class RuntimeError: public Exception
@@ -36,9 +43,6 @@ class InvalidRequest: public Exception
         InvalidRequest(const char* message);
 };
 
-//Exceptions types
-const unsigned int RUNTIME_ERROR_EXCEPTION_TYPE = 1;
-const unsigned int INVALID_REQUEST_EXCEPTION_TYPE = 2;
 
 // Exceptions
 extern const InvalidRequest* CANNOT_ENABLE_WATER_SOURCE;
@@ -47,7 +51,7 @@ extern const InvalidRequest* CANNOT_FILL_WATER_TANK_WITHOUT_WATER_SOURCE;
 extern const InvalidRequest* WATER_TANK_NOT_FOUND;
 extern const InvalidRequest* WATER_TANK_ALREADY_REGISTERED;
 
-extern const RuntimeError* WATER_TANK_STOPPED_TO_FILL;
+extern const RuntimeError* WATER_TANK_HAS_STOPPED_TO_FILL;
 extern const RuntimeError* WATER_TANK_IS_NOT_FILLING;
 
 extern const InvalidRequest* WATER_SOURCE_NOT_FOUND;

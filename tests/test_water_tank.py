@@ -5,6 +5,7 @@ import logging
 import pytest
 
 from .lib.api import APIClient
+from .lib.api.models import OperationMode
 from .lib.api.exceptions import APIException, APIInvalidRequest
 
 LOGGER = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ async def test_max_water_tanks(api_client: APIClient):
         await api_client.create_water_tank('Last water tank', 20, volume_factor, pressure_factor)
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Max of water tanks reached'
 
     water_tanks = await api_client.get_water_tank_list()
@@ -93,7 +94,7 @@ async def test_create_already_registered_water_tank(api_client: APIClient):
         assert free_memory == expected_free_memory
 
         response = exc_info.value.response
-        assert response.error is APIInvalidRequest
+        assert response.exception_type is APIInvalidRequest
         assert response.message == error_message
 
         water_tanks = await api_client.get_water_tank_list()
@@ -115,7 +116,7 @@ async def test_max_length_water_tank_name(api_client: APIClient):
     response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.id == 0
-    assert response.error is APIException
+    assert response.exception_type is APIException
     assert response.message == 'Failed to decode the request'
 
 
@@ -176,7 +177,7 @@ async def test_remove_invalid_water_tank(api_client: APIClient):
         await api_client.remove_water_tank('Water tank 1')
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Could not find a water tank with the name provided'
 
 
@@ -190,7 +191,7 @@ async def test_get_water_tank(api_client: APIClient):
 
     assert water_tank['name'] == water_tank_name
     assert water_tank['pressureSensorPin'] == pressure_sensor
-    assert water_tank['isFilling'] == False
+    assert water_tank['filling'] == False
     assert water_tank['volumeFactor'] == volume_factor
     assert water_tank['pressureFactor'] == pressure_factor
     assert water_tank['minimumVolume'] == 0
@@ -216,7 +217,7 @@ async def test_get_water_tank_with_water_source(api_client: APIClient):
 
     assert water_tank['name'] == water_tank_name
     assert water_tank['pressureSensorPin'] == pressure_sensor
-    assert water_tank['isFilling'] == False
+    assert water_tank['filling'] == False
     assert water_tank['volumeFactor'] == volume_factor
     assert water_tank['pressureFactor'] == pressure_factor
     assert water_tank['minimumVolume'] == 0
@@ -241,7 +242,7 @@ async def test_remove_water_tank_associated_to_water_source(api_client: APIClien
         await api_client.remove_water_tank(water_tank_name)
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Cannot remove the water tank, there is a water source dependent of it'
 
     water_sources = await api_client.get_water_source_list()
@@ -263,7 +264,7 @@ async def test_get_invalid_water_tank(api_client: APIClient):
         await api_client.get_water_tank(water_tank_name)
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == error_message
 
 async def test_create_water_tank_with_invalid_water_source(api_client: APIClient):
@@ -277,7 +278,7 @@ async def test_create_water_tank_with_invalid_water_source(api_client: APIClient
         await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, 'Compesa water source')
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Could not find a water source with the name provided'    
 
 
@@ -396,91 +397,203 @@ async def test_set_water_tank_zero_volume_factor(api_client: APIClient):
             await asyncio.sleep(0.01)
 
 
-@pytest.mark.xfail
-async def test_avoid_multiples_turn_on_and_off_due_close_to_range_border(api_client: APIClient):
-    """
-    Platform should keep water source turned on/off for at least 1 minute
-    to avoid multiples filling calls.
-    """
-    raise NotImplementedError
-
-
-@pytest.mark.xfail
 async def test_fill_invalid_water_tank(api_client: APIClient):
     """
     Platform should be respond with an error when trying to fill a 
     invalid water tank manually in manual mode
     """
-    raise NotImplementedError
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.fill_water_tank('A water tank', True)
+    
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Could not find a water tank with the name provided'
 
 
-@pytest.mark.xfail
 async def test_stop_fill_invalid_water_tank(api_client: APIClient):
     """
     Platform should be respond with an error when trying to fill a 
     invalid water tank manually in manual mode
     """
-    raise NotImplementedError
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.fill_water_tank('A water tank', False)
+    
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Could not find a water tank with the name provided'
 
 
-@pytest.mark.xfail
 async def test_fill_water_tank_manually_in_auto_mode(api_client: APIClient):
     """Platform should respond with an error when trying to fill water tank manually in auto mode"""
-    raise NotImplementedError
+    await api_client.set_operation_mode(OperationMode.AUTO)
+
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name, water_source_pin)
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, water_source_name)
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.fill_water_tank(water_tank_name, True)
+    
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Cannot handle a water tank in auto mode'
+    
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert not water_tank['filling']
 
 
-@pytest.mark.xfail
 async def test_fill_water_tank_manually_in_manual_mode(api_client: APIClient):
     """Platform should be able to fill a water tank manually in manual mode"""
-    raise NotImplementedError
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name, water_source_pin)
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, water_source_name)
+
+    await api_client.set_water_tank_max_volume(water_tank_name, 20)
+
+    await api_client.fill_water_tank(water_tank_name, True)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert water_tank['filling']
 
 
-@pytest.mark.xfail
 async def test_stop_fill_water_tank_in_auto_mode(api_client: APIClient):
     """
     Platform should respond with an error when trying 
     to stop to fill water tank manually in auto mode.
     """
-    raise NotImplementedError
+    await api_client.set_operation_mode(OperationMode.AUTO)
+
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name, water_source_pin)
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, water_source_name)
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.fill_water_tank(water_tank_name, False)
+    
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Cannot handle a water tank in auto mode'
 
 
-@pytest.mark.xfail
 async def test_stop_fill_water_tank_in_manual_mode(api_client: APIClient):
     """Platform should be able to stop to fill a water tank manually in manual mode"""
-    raise NotImplementedError
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name, water_source_pin)
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, water_source_name)
+
+    await api_client.set_water_tank_max_volume(water_tank_name, 20)
+
+    await api_client.fill_water_tank(water_tank_name, True)
+    
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert water_tank['filling']
+    
+    await api_client.fill_water_tank(water_tank_name, False)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert not water_tank['filling']
 
 
-@pytest.mark.xfail
 async def test_fill_water_tank_with_max_volume(api_client: APIClient):
     """
     Platform should respond with an error when trying to fill water tank 
     with volume in its maximum allowed.
     """
-    raise NotImplementedError
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name, water_source_pin)
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, water_source_name)
+
+    await api_client.set_water_tank_max_volume(water_tank_name, 20)
+    await api_client.set_io_value(pressure_sensor, 20)
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.fill_water_tank(water_tank_name, True)
+    
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Cannot fill the water tank, maximum threshold reached'
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert not water_tank['filling']
 
 
-@pytest.mark.xfail
 async def test_fill_water_tank_with_max_volume_force(api_client: APIClient):
     """
     Platform should be able to fill water tank even when its volume reaches 
     the maximum value allowed if force flag is present.
     """
-    raise NotImplementedError
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name, water_source_pin)
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, water_source_name)
+
+    await api_client.set_water_tank_max_volume(water_tank_name, 20)
+    await api_client.set_io_value(pressure_sensor, 20)
+
+    await api_client.fill_water_tank(water_tank_name, True, True)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert water_tank['filling']
 
 
-@pytest.mark.xfail
 async def test_fill_water_tank_without_water_source(api_client: APIClient):
     """
     Platform should respond with an error when trying to fill water tank 
     without water source
     """
-    raise NotImplementedError
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor)
+
+    await api_client.set_water_tank_max_volume(water_tank_name, 20)
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.fill_water_tank(water_tank_name, True)
+    
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Cannot fill a water tank without setting a water source for it'
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert not water_tank['filling']
 
 
-@pytest.mark.xfail
 async def test_fill_water_tank_without_water_source_force(api_client: APIClient):
     """
-    Platform should be able to fill water tank even when it doesn't have a water source,
-    if force flag is present.
+    Platform should not be able to fill water tank when it doesn't have a water source 
+    even the force flag is present.
     """
-    raise NotImplementedError
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor)
+
+    await api_client.set_water_tank_max_volume(water_tank_name, 20)
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.fill_water_tank(water_tank_name, True, True)
+    
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Cannot fill a water tank without setting a water source for it'
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert not water_tank['filling']

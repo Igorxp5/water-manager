@@ -6,8 +6,31 @@
 const int ITEM_NOT_FOUND = -1;
 
 Manager::Manager() {
-    this->timer = new Clock();
-    this->timer->startTimer();
+    this->waterTanksErrorsTimer = new Clock();
+    this->waterTanksErrorsTimer->startTimer();
+}
+
+Manager::~Manager() {
+    delete this->waterTanksErrorsTimer;
+
+    char* name;
+    WaterTank* waterTank;
+    WaterSource* waterSource;
+    for (unsigned int i = 0; i < this->totalWaterSources; i++) {
+        name = this->waterSourceNames[i];
+        waterSource = this->waterSources[i]; 
+        delete[] name;
+        delete waterSource;
+    }
+
+    for (unsigned int j = 0; j < this->totalWaterTanks; j++) {
+        name = this->waterTankNames[j];
+        waterTank = this->waterTanks[j]; 
+        delete[] name;
+        delete waterTank;
+    }
+    
+    IOInterface::removeAll();
 }
 
 OperationMode Manager::getOperationMode() {
@@ -146,7 +169,12 @@ WaterSource* Manager::unregisterWaterSource(char* name) {
 
         this->totalWaterSources -= 1;
 
-        delete waterSourceName;
+        delete[] waterSourceName;
+
+        unsigned int pin = waterSource->getPin();
+        if (!this->isIOInterfaceDependency(pin)) {
+            IOInterface::remove(pin);
+        }
     }
     return waterSource;
 }
@@ -171,7 +199,12 @@ WaterTank* Manager::unregisterWaterTank(char* name) {
 
         this->totalWaterTanks -= 1;
 
-        delete waterTankName;
+        delete[] waterTankName;
+
+        unsigned int pin = waterTank->getPressureSensorPin();
+        if (!this->isIOInterfaceDependency(pin)) {
+            IOInterface::remove(pin);
+        }
     }
     return waterTank;
 }
@@ -258,33 +291,16 @@ void Manager::loop() {
             this->waterTanks[i]->loop();
             this->waterTanksLoopErrors[i] = (const RuntimeError*) Exception::popException();
         }
-        if (this->timer->getElapsedTime() >= ERROR_INTERVAL) {
+        if (this->waterTanksErrorsTimer->getElapsedTime() >= ERROR_INTERVAL) {
             const RuntimeError* error = NULL;
-            for (; error != NULL && this->waterTankErrorIndex < this->totalWaterTanks; this->waterTankErrorIndex++) {
+            unsigned int endIndex = min(0, this->waterTankErrorIndex - 1);
+            do {
                 error = this->waterTanksLoopErrors[this->waterTankErrorIndex];
-            }
-            this->waterTankErrorIndex = this->waterTankErrorIndex % this->totalWaterTanks;
-            Exception::throwException(error);
+                this->waterTankErrorIndex = (this->waterTankErrorIndex + 1) % this->totalWaterTanks;
+            } while(error == NULL && this->waterTankErrorIndex != endIndex);
+            Exception::throwException(error, this->waterTankNames[this->waterTankErrorIndex]);
+            this->waterTanksErrorsTimer->startTimer();
         }
-    }
-    this->timer->startTimer();
-}
-
-void Manager::reset() {
-    this->setOperationMode(MANUAL);
-
-    unsigned int total = this->totalWaterSources;
-    for (unsigned int i = 0; i < total; i++) {
-        //turn off all water sources when resetting
-        this->setWaterSourceState(this->waterSourceNames[0], false);
-        //remove the first water source from the list in each iteration
-        delete this->unregisterWaterSource(this->waterSourceNames[0]);
-    }
-
-    total = this->totalWaterTanks;
-    for (unsigned int j = 0; j < total; j++) {
-        //remove the first water source from the list in each iteration
-        delete this->unregisterWaterTank(this->waterTankNames[0]);
     }
 }
 

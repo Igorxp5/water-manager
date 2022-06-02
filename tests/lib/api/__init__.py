@@ -9,7 +9,7 @@ from typing import Dict
 from protobuf.out.python.api_pb2 import Request, Response
 
 from .models import OperationMode, IOType
-from .response import APIResponse
+from .response import APIResponse, APIErrorResponse
 from .volatile_queue import VolatileQueue
 from ...test_protobuf.test_pb2 import _TestRequest, _TestResponse
 
@@ -44,7 +44,7 @@ class APIClient:
     def create_water_source(self, name: str, pin: int, water_tank_name: str = None):
         return self.send_request('createWaterSource', name=name, pin=pin, waterTankName=water_tank_name)
 
-    def get_water_source(self, name: str):
+    def get_water_source(self, name: str) -> dict:
         return self.send_request('getWaterSource', waterSourceName=name)
 
     def set_water_source_state(self, name: str, enabled: bool):
@@ -53,7 +53,7 @@ class APIClient:
     def remove_water_source(self, name: str):
         return self.send_request('removeWaterSource', waterSourceName=name)
 
-    def get_water_source_list(self):
+    def get_water_source_list(self) -> list:
         return self.send_request('getWaterSourceList', response_type=list)
 
     def create_water_tank(self, name: str, pressure_sensor_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None):
@@ -78,22 +78,25 @@ class APIClient:
     def set_water_tank_pressure_factor(self, name: str, value: float):
         return self.send_request('setWaterTankPressureFactor', waterTankName=name, value=value)
 
-    def get_water_tank_list(self):
+    def get_water_tank_list(self) -> list:
         return self.send_request('getWaterTankList', response_type=list)
     
-    def get_water_tank(self, name: str):
+    def get_water_tank(self, name: str) -> dict:
         return self.send_request('getWaterTank', waterTankName=name)
 
-    def fill_water_tank(self, name: str, enabled: bool, force: bool):
+    def fill_water_tank(self, name: str, enabled: bool, force: bool=False):
         return self.send_request('fillWaterTank', waterTankName=name, enabled=enabled, force=force)
 
     def set_operation_mode(self, mode: OperationMode):
         return self.send_request('setMode', mode=mode.value)
     
-    def get_operation_mode(self):
+    def get_operation_mode(self) -> OperationMode:
         def _operation_mode_factory(value=0):
             return OperationMode(value) if value else OperationMode.MANUAL
         return self.send_request('getMode', response_type=_operation_mode_factory)
+
+    def reset(self):
+        return self.send_request('reset')
 
     def create_io(self, pin: int, type_: IOType=IOType.DIGITAL):
         return self.send_request('createIO', pin=pin, type=type_.value, request_class=_TestRequest)
@@ -101,7 +104,7 @@ class APIClient:
     def set_io_value(self, pin: int, value: int):
         return self.send_request('setIOValue', pin=pin, value=value, request_class=_TestRequest)
 
-    def get_io_value(self, pin: int):
+    def get_io_value(self, pin: int) -> int:
         return self.send_request('getIOValue', pin=pin, request_class=_TestRequest, response_type=int)
 
     def clear_io(self):
@@ -110,14 +113,14 @@ class APIClient:
     def set_clock_offset(self, value: int):
         return self.send_request('setClockOffset', value=value, request_class=_TestRequest)
     
-    def get_millis(self):
+    def get_millis(self) -> int:
         return self.send_request('getMillis', request_class=_TestRequest, response_type=int)
 
-    def get_free_memory(self):
+    def get_free_memory(self) -> int:
         return self.send_request('freeMemory', request_class=_TestRequest, response_type=int)
 
-    def reset(self):
-        return self.send_request('resetAPI', request_class=_TestRequest)
+    def reset_clock(self):
+        return self.send_request('resetClock', request_class=_TestRequest)
     
     def set_timeout(self, timeout):
         self._timeout = timeout
@@ -133,7 +136,7 @@ class APIClient:
         if not self._event_loop.is_closed():
             self._event_loop.run_until_complete(self._arduino_connection.close())
 
-    async def get_error_response(self):
+    async def get_error_response(self) -> APIResponse:
         response = await self._unmapped_error_responses.get()
         self._unmapped_error_responses.task_done()
         return response
@@ -146,18 +149,17 @@ class APIClient:
                 future_response = self._future_responses.get(response.id)
                 if future_response is not None:
                     future, response_type = future_response
-                    if not response.error:
+                    if not isinstance(response, APIErrorResponse):
                         message = response.message
                         if response_type:
                             message = response_type(message) if message else response_type()
                         future.set_result(message)
                     else:
-                        exc = response.error(response.message, response)
+                        exc = response.exception_type(response.message, response.arg, response)
                         future.set_exception(exc)
-                elif response.error is None:
+                elif not isinstance(response, APIErrorResponse):
                     LOGGER.warning('Got Response without mapped request!')
                     LOGGER.warning(f'Response message: {response.message}')
-                    LOGGER.warning(f'Response exception: {response.error.__class__.__name__}')
                 else:
                     await self._unmapped_error_responses.put(response)
 
@@ -178,7 +180,7 @@ class APIClient:
         future = await self.send_payload(payload, request.id, response_type=response_type)
         return await future
 
-    async def send_payload(self, payload, request_id=None, response_type=None):
+    async def send_payload(self, payload, request_id=None, response_type=None) -> asyncio.Future:
         _, writer = await self._open_stream_task
         writer.write(payload)
         await writer.drain()
@@ -190,7 +192,7 @@ class APIClient:
         return future
 
     @staticmethod
-    def build_request_wrapper(request):
+    def build_request_wrapper(request) -> bytes:
         message = request
         if isinstance(request, Request) or isinstance(request, _TestRequest):
             message = request.SerializeToString()

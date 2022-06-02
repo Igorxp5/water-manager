@@ -23,6 +23,7 @@ async def test_create_max_items(api_client: APIClient):
         LOGGER.debug(f'Current free memory: {free_memory} bytes')
         await api_client.create_water_source(name, pin)
         assert free_memory > 500
+        await asyncio.sleep(0.1)
     
     for name, pressure_sensor in expected_water_tanks:
         free_memory = await api_client.get_free_memory()
@@ -30,6 +31,7 @@ async def test_create_max_items(api_client: APIClient):
         LOGGER.debug(f'Current free memory: {free_memory} bytes')
         await api_client.create_water_tank(name, pressure_sensor, volume_factor, pressure_factor)
         assert free_memory > 500
+        await asyncio.sleep(0.1)
 
     water_tanks = await api_client.get_water_tank_list()
     
@@ -84,3 +86,44 @@ async def test_create_infinite_ios_by_creating_water_sources_and_tanks(api_clien
             await api_client.remove_water_tank(water_tank_name)
 
     assert abs(await api_client.get_free_memory() - free_memory) <= 2**4
+
+
+async def test_memory_leak_by_restting_many_times(api_client: APIClient):
+    """Platform shuold deallocate everything, to avoid a memory leak"""
+    start_free_memory = await api_client.get_free_memory()
+    free_memory = start_free_memory
+
+    total = 30
+    for i in range(total):
+        iteration = i + 1
+        free_memory = await api_client.get_free_memory()
+        LOGGER.info(f'Starting loop {iteration}/{total}... Current free memory: {free_memory} bytes')
+
+        volume_factor, pressure_factor = 1.5, 2.5
+        expected_water_sources = [(f'Water source {i}', i) for i in range(1, 11)]
+        expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, 11)]
+
+        for name, pin in expected_water_sources:
+            await api_client.create_water_source(name, pin)
+            await asyncio.sleep(0.3)
+        
+        for name, pressure_sensor in expected_water_tanks:
+            await api_client.create_water_tank(name, pressure_sensor, volume_factor, pressure_factor)
+            await asyncio.sleep(0.3)
+
+        water_tanks = await api_client.get_water_tank_list()
+        
+        assert water_tanks == [name for name, _ in expected_water_tanks]
+
+        water_sources = await api_client.get_water_source_list()
+        
+        assert water_sources == [name for name, _ in expected_water_sources]
+
+        await asyncio.sleep(0.3)
+
+        LOGGER.info(f'Resetting...')
+        await api_client.reset()
+
+    end_free_memory = await api_client.get_free_memory()
+
+    assert end_free_memory + 100 >= start_free_memory

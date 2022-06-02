@@ -157,10 +157,6 @@ unsigned int API::getTotalWaterTanks() {
 void API::removeWaterSource(char* name) {
     WaterSource* waterSource = this->manager->unregisterWaterSource(name);
     if (waterSource != NULL) {
-        unsigned int pin = waterSource->getPin();
-        if (!this->manager->isIOInterfaceDependency(pin)) {
-            IOInterface::remove(pin);
-        }
         delete waterSource;
     }
 }
@@ -168,10 +164,6 @@ void API::removeWaterSource(char* name) {
 void API::removeWaterTank(char* name) {
     WaterTank* waterTank = this->manager->unregisterWaterTank(name);
     if (waterTank != NULL) {
-        unsigned int pin = waterTank->getPressureSensorPin();
-        if (!this->manager->isIOInterfaceDependency(pin)) {
-            IOInterface::remove(pin);
-        }
         delete waterTank;
     }
 }
@@ -185,7 +177,8 @@ void API::fillWaterTank(char* name, bool enabled, bool force) {
 }
 
 void API::reset() {
-    this->manager->reset();
+    delete this->manager;
+    this->manager = new Manager();
 }
 
 void API::loop() {

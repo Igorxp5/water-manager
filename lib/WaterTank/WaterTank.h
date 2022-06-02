@@ -23,6 +23,7 @@ class WaterTank
 
         WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor);
         WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor, WaterSource* waterSource);
+        ~WaterTank();
 
         float getVolume();
         float getPressure();

@@ -38,7 +38,7 @@ async def test_max_water_sources(api_client: APIClient):
         await api_client.create_water_source('Last water source', 20)
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Max of water sources reached'
 
     water_sources = await api_client.get_water_source_list()
@@ -73,7 +73,7 @@ async def test_create_already_registered_water_source(api_client: APIClient):
         assert free_memory == expected_free_memory
 
         response = exc_info.value.response
-        assert response.error is APIInvalidRequest
+        assert response.exception_type is APIInvalidRequest
         assert response.message == error_message
 
         water_sources = await api_client.get_water_source_list()
@@ -93,7 +93,7 @@ async def test_max_length_water_source_name(api_client: APIClient):
     response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.id == 0
-    assert response.error is APIException
+    assert response.exception_type is APIException
     assert response.message == 'Failed to decode the request'
 
 
@@ -153,7 +153,7 @@ async def test_remove_invalid_water_source(api_client: APIClient):
         await api_client.remove_water_source('Water source 1')
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Could not find a water source with the name provided'
 
 
@@ -188,7 +188,7 @@ async def test_remove_water_source_associated_to_water_tank(api_client: APIClien
         await api_client.remove_water_source(water_source_name)
     
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Cannot remove the water source, there is a water tank dependent of it'
 
     water_sources = await api_client.get_water_source_list()
@@ -223,7 +223,7 @@ async def test_get_invalid_water_source(api_client: APIClient):
         await api_client.get_water_source(name)
 
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == error_message
 
 
@@ -261,7 +261,7 @@ async def test_set_water_source_state_auto_mode(api_client: APIClient):
             await api_client.set_water_source_state(name, state)
     
         response = exc_info.value.response
-        assert response.error is APIInvalidRequest
+        assert response.exception_type is APIInvalidRequest
         assert response.message == error_message
 
 
@@ -276,5 +276,5 @@ async def test_create_water_source_with_invalid_water_tank(api_client: APIClient
         await api_client.create_water_source(name, pin, 'Bottom tank')
     
     response = exc_info.value.response
-    assert response.error is APIInvalidRequest
+    assert response.exception_type is APIInvalidRequest
     assert response.message == 'Could not find a water tank with the name provided'    

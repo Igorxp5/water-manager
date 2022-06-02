@@ -37,6 +37,7 @@ def upload_test_environment():
 async def check_memory_leak(api_client: APIClient):
     await api_client.reset()
     await api_client.clear_io()
+    await api_client.reset_clock()
     free_memory = await api_client.get_free_memory()
     LOGGER.debug(f'Free memory before starting the test: {free_memory} bytes!')
     yield
@@ -44,6 +45,7 @@ async def check_memory_leak(api_client: APIClient):
     LOGGER.debug(f'Free memory after finishing the test: {free_memory} bytes!')
     await api_client.reset()
     await api_client.clear_io()
+    await api_client.reset_clock()
 
 
 @pytest.fixture(scope='session')
