@@ -9,6 +9,12 @@ enum IOType {
     ANY, DIGITAL, ANALOGIC
 };
 
+#ifdef TEST
+enum IOSource {
+    VIRTUAL, PHYSICAL
+};
+#endif
+
 class IOInterface
 {
     public:
@@ -17,6 +23,10 @@ class IOInterface
         unsigned int read();
         void write(unsigned int w);
         unsigned int getPin();
+
+        #ifdef TEST
+        static IOSource source;
+        #endif
 
         static IOInterface* get(unsigned int pin);
         static void remove(unsigned int pin);

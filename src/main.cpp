@@ -251,6 +251,9 @@ void handleAPIRequest() {
         }
     } else if (request.which_message == Request_reset_tag) {
         api->reset();
+        #ifdef TEST
+        IOInterface::source = VIRTUAL;
+        #endif
     }
 
     if (!Exception::hasException()) {
@@ -346,6 +349,13 @@ void handleTestRequest() {
         sendOkTestResponse(testRequest.id);
     } else if (testRequest.which_message == _TestRequest_resetClock_tag) {
         Clock::setClockOffset(0);
+        sendOkTestResponse(testRequest.id);
+    }  else if (testRequest.which_message == _TestRequest_setIOSource_tag) {
+        if (testRequest.message.setIOSource.source == _TestSetIOSource_IOSource_VIRTUAL) {
+            IOInterface::source = VIRTUAL; 
+        } else if (testRequest.message.setIOSource.source == _TestSetIOSource_IOSource_PHYSICAL) {
+            IOInterface::source = PHYSICAL;
+        }
         sendOkTestResponse(testRequest.id);
     }
 }

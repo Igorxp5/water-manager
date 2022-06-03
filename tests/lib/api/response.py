@@ -69,7 +69,7 @@ class APIResponse:
         self.message = message
     
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.id}, {repr(self.message)}, {repr(self.error)}))'
+        return f'{self.__class__.__name__}({self.id}, {repr(self.message)})'
 
     @staticmethod
     def parse(response_pb):
@@ -114,6 +114,9 @@ class APIErrorResponse(APIResponse):
         super().__init__(id_, message)
         self.exception_type = exception_type
         self.arg = arg
+    
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.id}, {repr(self.message)}, {repr(self.arg)}, {self.exception_type})'
 
     @staticmethod
     def parse_error(id_: int, message: str, error: Union[bool, dict]):

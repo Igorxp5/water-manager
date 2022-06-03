@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ntest.proto\"\xe3\x02\n\x0c_TestRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\"\n\x08\x63reateIO\x18\x02 \x01(\x0b\x32\x0e._TestCreateIOH\x00\x12&\n\nsetIOValue\x18\x03 \x01(\x0b\x32\x10._TestSetIOValueH\x00\x12&\n\ngetIOValue\x18\x04 \x01(\x0b\x32\x10._TestGetIOValueH\x00\x12\"\n\x08\x63learIOs\x18\x05 \x01(\x0b\x32\x0e._TestClearIOSH\x00\x12&\n\nfreeMemory\x18\x06 \x01(\x0b\x32\x10._TestFreeMemoryH\x00\x12.\n\x0esetClockOffset\x18\x07 \x01(\x0b\x32\x14._TestSetClockOffsetH\x00\x12$\n\tgetMillis\x18\x08 \x01(\x0b\x32\x0f._TestGetMillisH\x00\x12&\n\nresetClock\x18\t \x01(\x0b\x32\x10._TestResetClockH\x00\x42\t\n\x07message\"\x89\x01\n\x12_TestResponseValue\x12\x13\n\tboolValue\x18\x02 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x03 \x01(\x05H\x00\x12\x13\n\tuintValue\x18\x04 \x01(\rH\x00\x12\x15\n\x0b\x64oubleValue\x18\x05 \x01(\x02H\x00\x12\x15\n\x0bstringValue\x18\x06 \x01(\tH\x00\x42\x07\n\x05value\"P\n\r_TestResponse\x12\n\n\x02id\x18\x01 \x01(\x04\x12$\n\x07message\x18\x02 \x01(\x0b\x32\x13._TestResponseValue\x12\r\n\x05\x65rror\x18\x03 \x01(\x08\"f\n\r_TestCreateIO\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12#\n\x04type\x18\x02 \x01(\x0e\x32\x15._TestCreateIO.IOType\"#\n\x06IOType\x12\x0b\n\x07\x44IGITAL\x10\x00\x12\x0c\n\x08\x41NALOGIC\x10\x01\"-\n\x0f_TestSetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\r\"\x1e\n\x0f_TestGetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\"\x0f\n\r_TestClearIOS\"\x11\n\x0f_TestFreeMemory\"$\n\x13_TestSetClockOffset\x12\r\n\x05value\x18\x01 \x01(\r\"\x10\n\x0e_TestGetMillis\"\x11\n\x0f_TestResetClockb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ntest.proto\"\x8d\x03\n\x0c_TestRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\"\n\x08\x63reateIO\x18\x02 \x01(\x0b\x32\x0e._TestCreateIOH\x00\x12&\n\nsetIOValue\x18\x03 \x01(\x0b\x32\x10._TestSetIOValueH\x00\x12&\n\ngetIOValue\x18\x04 \x01(\x0b\x32\x10._TestGetIOValueH\x00\x12\"\n\x08\x63learIOs\x18\x05 \x01(\x0b\x32\x0e._TestClearIOSH\x00\x12&\n\nfreeMemory\x18\x06 \x01(\x0b\x32\x10._TestFreeMemoryH\x00\x12.\n\x0esetClockOffset\x18\x07 \x01(\x0b\x32\x14._TestSetClockOffsetH\x00\x12$\n\tgetMillis\x18\x08 \x01(\x0b\x32\x0f._TestGetMillisH\x00\x12(\n\x0bsetIOSource\x18\t \x01(\x0b\x32\x11._TestSetIOSourceH\x00\x12&\n\nresetClock\x18\n \x01(\x0b\x32\x10._TestResetClockH\x00\x42\t\n\x07message\"\x89\x01\n\x12_TestResponseValue\x12\x13\n\tboolValue\x18\x02 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x03 \x01(\x05H\x00\x12\x13\n\tuintValue\x18\x04 \x01(\rH\x00\x12\x15\n\x0b\x64oubleValue\x18\x05 \x01(\x02H\x00\x12\x15\n\x0bstringValue\x18\x06 \x01(\tH\x00\x42\x07\n\x05value\"P\n\r_TestResponse\x12\n\n\x02id\x18\x01 \x01(\x04\x12$\n\x07message\x18\x02 \x01(\x0b\x32\x13._TestResponseValue\x12\r\n\x05\x65rror\x18\x03 \x01(\x08\"f\n\r_TestCreateIO\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12#\n\x04type\x18\x02 \x01(\x0e\x32\x15._TestCreateIO.IOType\"#\n\x06IOType\x12\x0b\n\x07\x44IGITAL\x10\x00\x12\x0c\n\x08\x41NALOGIC\x10\x01\"-\n\x0f_TestSetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\r\"\x1e\n\x0f_TestGetIOValue\x12\x0b\n\x03pin\x18\x01 \x01(\r\"\x0f\n\r_TestClearIOS\"\x11\n\x0f_TestFreeMemory\"$\n\x13_TestSetClockOffset\x12\r\n\x05value\x18\x01 \x01(\r\"\x10\n\x0e_TestGetMillis\"e\n\x10_TestSetIOSource\x12*\n\x06source\x18\x01 \x01(\x0e\x32\x1a._TestSetIOSource.IOSource\"%\n\x08IOSource\x12\x0b\n\x07VIRTUAL\x10\x00\x12\x0c\n\x08PHYSICAL\x10\x01\"\x11\n\x0f_TestResetClockb\x06proto3')
 
 
 
@@ -28,8 +28,10 @@ __TESTCLEARIOS = DESCRIPTOR.message_types_by_name['_TestClearIOS']
 __TESTFREEMEMORY = DESCRIPTOR.message_types_by_name['_TestFreeMemory']
 __TESTSETCLOCKOFFSET = DESCRIPTOR.message_types_by_name['_TestSetClockOffset']
 __TESTGETMILLIS = DESCRIPTOR.message_types_by_name['_TestGetMillis']
+__TESTSETIOSOURCE = DESCRIPTOR.message_types_by_name['_TestSetIOSource']
 __TESTRESETCLOCK = DESCRIPTOR.message_types_by_name['_TestResetClock']
 __TESTCREATEIO_IOTYPE = __TESTCREATEIO.enum_types_by_name['IOType']
+__TESTSETIOSOURCE_IOSOURCE = __TESTSETIOSOURCE.enum_types_by_name['IOSource']
 _TestRequest = _reflection.GeneratedProtocolMessageType('_TestRequest', (_message.Message,), {
   'DESCRIPTOR' : __TESTREQUEST,
   '__module__' : 'test_pb2'
@@ -100,6 +102,13 @@ _TestGetMillis = _reflection.GeneratedProtocolMessageType('_TestGetMillis', (_me
   })
 _sym_db.RegisterMessage(_TestGetMillis)
 
+_TestSetIOSource = _reflection.GeneratedProtocolMessageType('_TestSetIOSource', (_message.Message,), {
+  'DESCRIPTOR' : __TESTSETIOSOURCE,
+  '__module__' : 'test_pb2'
+  # @@protoc_insertion_point(class_scope:_TestSetIOSource)
+  })
+_sym_db.RegisterMessage(_TestSetIOSource)
+
 _TestResetClock = _reflection.GeneratedProtocolMessageType('_TestResetClock', (_message.Message,), {
   'DESCRIPTOR' : __TESTRESETCLOCK,
   '__module__' : 'test_pb2'
@@ -111,27 +120,31 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   __TESTREQUEST._serialized_start=15
-  __TESTREQUEST._serialized_end=370
-  __TESTRESPONSEVALUE._serialized_start=373
-  __TESTRESPONSEVALUE._serialized_end=510
-  __TESTRESPONSE._serialized_start=512
-  __TESTRESPONSE._serialized_end=592
-  __TESTCREATEIO._serialized_start=594
-  __TESTCREATEIO._serialized_end=696
-  __TESTCREATEIO_IOTYPE._serialized_start=661
-  __TESTCREATEIO_IOTYPE._serialized_end=696
-  __TESTSETIOVALUE._serialized_start=698
-  __TESTSETIOVALUE._serialized_end=743
-  __TESTGETIOVALUE._serialized_start=745
-  __TESTGETIOVALUE._serialized_end=775
-  __TESTCLEARIOS._serialized_start=777
-  __TESTCLEARIOS._serialized_end=792
-  __TESTFREEMEMORY._serialized_start=794
-  __TESTFREEMEMORY._serialized_end=811
-  __TESTSETCLOCKOFFSET._serialized_start=813
-  __TESTSETCLOCKOFFSET._serialized_end=849
-  __TESTGETMILLIS._serialized_start=851
-  __TESTGETMILLIS._serialized_end=867
-  __TESTRESETCLOCK._serialized_start=869
-  __TESTRESETCLOCK._serialized_end=886
+  __TESTREQUEST._serialized_end=412
+  __TESTRESPONSEVALUE._serialized_start=415
+  __TESTRESPONSEVALUE._serialized_end=552
+  __TESTRESPONSE._serialized_start=554
+  __TESTRESPONSE._serialized_end=634
+  __TESTCREATEIO._serialized_start=636
+  __TESTCREATEIO._serialized_end=738
+  __TESTCREATEIO_IOTYPE._serialized_start=703
+  __TESTCREATEIO_IOTYPE._serialized_end=738
+  __TESTSETIOVALUE._serialized_start=740
+  __TESTSETIOVALUE._serialized_end=785
+  __TESTGETIOVALUE._serialized_start=787
+  __TESTGETIOVALUE._serialized_end=817
+  __TESTCLEARIOS._serialized_start=819
+  __TESTCLEARIOS._serialized_end=834
+  __TESTFREEMEMORY._serialized_start=836
+  __TESTFREEMEMORY._serialized_end=853
+  __TESTSETCLOCKOFFSET._serialized_start=855
+  __TESTSETCLOCKOFFSET._serialized_end=891
+  __TESTGETMILLIS._serialized_start=893
+  __TESTGETMILLIS._serialized_end=909
+  __TESTSETIOSOURCE._serialized_start=911
+  __TESTSETIOSOURCE._serialized_end=1012
+  __TESTSETIOSOURCE_IOSOURCE._serialized_start=975
+  __TESTSETIOSOURCE_IOSOURCE._serialized_end=1012
+  __TESTRESETCLOCK._serialized_start=1014
+  __TESTRESETCLOCK._serialized_end=1031
 # @@protoc_insertion_point(module_scope)

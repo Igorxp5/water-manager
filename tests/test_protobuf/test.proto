@@ -10,7 +10,8 @@ message _TestRequest {
         _TestFreeMemory freeMemory = 6;
         _TestSetClockOffset setClockOffset = 7;
         _TestGetMillis getMillis = 8;
-        _TestResetClock resetClock = 9;
+        _TestSetIOSource setIOSource = 9;
+        _TestResetClock resetClock = 10;
     }
 }
 
@@ -59,6 +60,14 @@ message _TestSetClockOffset {
 }
 
 message _TestGetMillis {
+}
+
+message _TestSetIOSource {
+    enum IOSource {
+        VIRTUAL = 0;
+        PHYSICAL = 1;
+    }
+    IOSource source = 1;
 }
 
 message _TestResetClock {

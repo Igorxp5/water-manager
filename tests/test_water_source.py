@@ -364,3 +364,15 @@ async def test_set_water_source_active(api_client: APIClient):
 
     response = exc_info.value.response
     assert response.message == 'Cannot turn on a deactivated water source'
+
+
+async def test_create_empty_water_source(api_client: APIClient):
+    """Platform should respond with en error when trying to create a water source without a name"""
+    name, pin = '', 15
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.create_water_source(name, pin)
+
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Cannot create a resource with an empty name'

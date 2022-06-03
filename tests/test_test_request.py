@@ -1,6 +1,7 @@
 import pytest
 
 from .lib.api import APIClient
+from .lib.api.models import IOSource, IOType
 from .lib.api.exceptions import APIException
 
 
@@ -97,3 +98,19 @@ async def test_mock_long_overflow(api_client: APIClient):
     await api_client.set_clock_offset(offset)
 
     assert await api_client.get_millis() < 60 * 1000  # 60 seconds
+
+
+@pytest.mark.xfail(reason='Need to connect A01 pin')
+async def test_set_io_source(api_client: APIClient):
+    """Platform should be able to switch between physical and virtual I/O"""
+    await api_client.create_io(pin=1, type_=IOType.ANALOGIC)
+    
+    assert await api_client.get_io_value(pin=1) == 0
+    
+    await api_client.set_io_source(IOSource.PHYSICAL)
+
+    assert await api_client.get_io_value(pin=1) != 0
+
+    await api_client.set_io_source(IOSource.VIRTUAL)
+    
+    assert await api_client.get_io_value(pin=1) == 0

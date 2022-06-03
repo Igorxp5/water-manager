@@ -129,10 +129,13 @@ void Manager::registerWaterSource(char* name, WaterSource* waterSource) {
     } else if(this->totalWaterSources + 1 > MAX_WATER_SOURCES) {
         return Exception::throwException(&MAX_WATER_SOURCES_ERROR);
     } else {
-        this->totalWaterSources += 1;
-
         char* waterSourceName = new char[MAX_NAME_LENGTH + 1];
         strncpy(waterSourceName, name, MAX_NAME_LENGTH);
+        if (strlen(waterSourceName) == 0) {
+            delete[] waterSourceName;
+            return Exception::throwException(&RESOURCE_NAME_EMPTY);
+        }
+        this->totalWaterSources += 1;
         this->waterSources[this->totalWaterSources - 1] = waterSource;
         this->waterSourceNames[this->totalWaterSources - 1] = waterSourceName;
     }
@@ -144,10 +147,13 @@ void Manager::registerWaterTank(char* name, WaterTank* waterTank) {
     } else if(this->totalWaterTanks + 1 > MAX_WATER_TANKS) {
         return Exception::throwException(&MAX_WATER_TANKS_ERROR);
     } else {
-        this->totalWaterTanks += 1;
-
         char* waterTankName = new char[MAX_NAME_LENGTH + 1];
         strncpy(waterTankName, name, MAX_NAME_LENGTH);
+        if (strlen(waterTankName) == 0) {
+            delete[] waterTankName;
+            return Exception::throwException(&RESOURCE_NAME_EMPTY);
+        }
+        this->totalWaterTanks += 1;
         this->waterTanks[this->totalWaterTanks - 1] = waterTank;
         this->waterTankNames[this->totalWaterTanks - 1] = waterTankName;
     }

@@ -85,4 +85,6 @@ const Exception CANNOT_REMOVE_WATER_TANK_DEPENDENCY = Exception(
 
 const Exception PIN_NOT_FOUND = Exception("Pin is not defined in an IOInterface object", INVALID_REQUEST);
 
+const Exception RESOURCE_NAME_EMPTY = Exception("Cannot create a resource with an empty name", INVALID_REQUEST);
+
 #endif

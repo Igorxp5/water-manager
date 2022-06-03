@@ -1,17 +1,48 @@
+import sys
 import struct
 import asyncio
 import logging
+import pathlib
 import itertools
+import importlib
 import collections
 
 from typing import Dict
 
-from protobuf.out.python.api_pb2 import Request, Response
+try:
+    from protobuf.out.python.api_pb2 import Request, Response
+except ImportError:
+    # This module was done just for testing on Pytest and it cannot be import outside.
+    # FIXME: Handling for GUI lib
+    module_path = pathlib.Path(__file__).parent.parent.parent.parent / 'protobuf' / 'out' / 'python' / 'api_pb2.py'
+    module_name = 'api_pb2'
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    api_pb2 = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = api_pb2 
+    spec.loader.exec_module(api_pb2)
 
-from .models import OperationMode, IOType
+    from api_pb2 import Request, Response
+
+
+from .models import OperationMode, IOType, IOSource
 from .response import APIResponse, APIErrorResponse
+from .exceptions import APIException
 from .volatile_queue import VolatileQueue
-from ...test_protobuf.test_pb2 import _TestRequest, _TestResponse
+
+try:
+    from ...test_protobuf.test_pb2 import _TestRequest, _TestResponse
+except ImportError:
+    # This module was done just for testing on Pytest and it cannot be import outside.
+    # FIXME: Handling for GUI lib
+    module_path = pathlib.Path(__file__).parent.parent.parent / 'test_protobuf' / 'test_pb2.py'
+    module_name = 'test_pb2'
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    test_pb2 = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = test_pb2 
+    spec.loader.exec_module(test_pb2)
+
+    from test_pb2 import _TestRequest, _TestResponse
+
 
 PACKET_FORMAT = '<BH'
 LOGGER = logging.getLogger(__name__)
@@ -23,6 +54,7 @@ FutureResponse = collections.namedtuple('FutureResponse', ['future', 'response_t
 class APIClient:
     REQUEST_ID_ITERATOR = itertools.cycle(range(1, 65535))
     DEFAULT_REQUEST_TIMEOUT = 7
+    FUTURE_ALLOCATE_TIMEOUT = 100
     REQUEST_MESSAGE_TYPES = {Request: 1, _TestRequest: 2} 
 
     def __init__(self, arduino_connection, event_loop: asyncio.ProactorEventLoop = None, timeout=DEFAULT_REQUEST_TIMEOUT):
@@ -43,96 +75,99 @@ class APIClient:
     def __del__(self):
         self.close()
 
-    def create_water_source(self, name: str, pin: int, water_tank_name: str = None):
-        return self.send_request('createWaterSource', name=name, pin=pin, waterTankName=water_tank_name)
+    def create_water_source(self, name: str, pin: int, water_tank_name: str = None, return_exceptions=False):
+        return self.send_request('createWaterSource', name=name, pin=pin, waterTankName=water_tank_name, return_exceptions=return_exceptions)
 
-    def get_water_source(self, name: str) -> dict:
-        return self.send_request('getWaterSource', waterSourceName=name)
+    def get_water_source(self, name: str, return_exceptions=False) -> dict:
+        return self.send_request('getWaterSource', waterSourceName=name, return_exceptions=return_exceptions)
 
-    def set_water_source_state(self, name: str, enabled: bool, force: bool=False):
-        return self.send_request('setWaterSourceState', waterSourceName=name, state=enabled, force=force)
+    def set_water_source_state(self, name: str, enabled: bool, force: bool=False, return_exceptions=False):
+        return self.send_request('setWaterSourceState', waterSourceName=name, state=enabled, force=force, return_exceptions=return_exceptions)
 
-    def set_water_source_active(self, name: str, active: bool):
-        return self.send_request('setWaterSourceActive', waterSourceName=name, active=active)
+    def set_water_source_active(self, name: str, active: bool, return_exceptions=False):
+        return self.send_request('setWaterSourceActive', waterSourceName=name, active=active, return_exceptions=return_exceptions)
 
-    def remove_water_source(self, name: str):
-        return self.send_request('removeWaterSource', waterSourceName=name)
+    def remove_water_source(self, name: str, return_exceptions=False):
+        return self.send_request('removeWaterSource', waterSourceName=name, return_exceptions=return_exceptions)
 
-    def get_water_source_list(self) -> list:
-        return self.send_request('getWaterSourceList', response_type=list)
+    def get_water_source_list(self, return_exceptions=False) -> list:
+        return self.send_request('getWaterSourceList', response_type=list, return_exceptions=return_exceptions)
 
-    def create_water_tank(self, name: str, pressure_sensor_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None):
+    def create_water_tank(self, name: str, pressure_sensor_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None, return_exceptions=False):
         return self.send_request('createWaterTank', name=name, pressureSensorPin=pressure_sensor_pin, volumeFactor=volume_factor,
-                                 pressureFactor=pressure_factor, waterSourceName=water_source_name)
+                                 pressureFactor=pressure_factor, waterSourceName=water_source_name, return_exceptions=return_exceptions)
 
-    def remove_water_tank(self, name: str):
-        return self.send_request('removeWaterTank', waterTankName=name)
+    def remove_water_tank(self, name: str, return_exceptions=False):
+        return self.send_request('removeWaterTank', waterTankName=name, return_exceptions=return_exceptions)
     
-    def set_water_tank_minimum_volume(self, name: str, value: float):
-        return self.send_request('setWaterTankMinimumVolume', waterTankName=name, value=value)
+    def set_water_tank_minimum_volume(self, name: str, value: float, return_exceptions=False):
+        return self.send_request('setWaterTankMinimumVolume', waterTankName=name, value=value, return_exceptions=return_exceptions)
     
-    def set_water_tank_max_volume(self, name: str, value: float):
-        return self.send_request('setWaterTankMaxVolume', waterTankName=name, value=value)
+    def set_water_tank_max_volume(self, name: str, value: float, return_exceptions=False):
+        return self.send_request('setWaterTankMaxVolume', waterTankName=name, value=value, return_exceptions=return_exceptions)
     
-    def set_water_tank_zero_volume_pressure(self, name: str, value: float):
-        return self.send_request('setWaterTankZeroVolume', waterTankName=name, value=value)
+    def set_water_tank_zero_volume_pressure(self, name: str, value: float, return_exceptions=False):
+        return self.send_request('setWaterTankZeroVolume', waterTankName=name, value=value, return_exceptions=return_exceptions)
 
-    def set_water_tank_volume_factor(self, name: str, value: float):
-        return self.send_request('setWaterTankVolumeFactor', waterTankName=name, value=value)
+    def set_water_tank_volume_factor(self, name: str, value: float, return_exceptions=False):
+        return self.send_request('setWaterTankVolumeFactor', waterTankName=name, value=value, return_exceptions=return_exceptions)
     
-    def set_water_tank_pressure_factor(self, name: str, value: float):
-        return self.send_request('setWaterTankPressureFactor', waterTankName=name, value=value)
+    def set_water_tank_pressure_factor(self, name: str, value: float, return_exceptions=False):
+        return self.send_request('setWaterTankPressureFactor', waterTankName=name, value=value, return_exceptions=return_exceptions)
 
-    def set_water_tank_pressure_changing_value(self, name: str, value: float):
-        return self.send_request('setWaterTankPressureChangingValue', waterTankName=name, value=value)
+    def set_water_tank_pressure_changing_value(self, name: str, value: float, return_exceptions=False):
+        return self.send_request('setWaterTankPressureChangingValue', waterTankName=name, value=value, return_exceptions=return_exceptions)
 
-    def get_water_tank_list(self) -> list:
-        return self.send_request('getWaterTankList', response_type=list)
+    def get_water_tank_list(self, return_exceptions=False) -> list:
+        return self.send_request('getWaterTankList', response_type=list, return_exceptions=return_exceptions)
     
-    def get_water_tank(self, name: str) -> dict:
-        return self.send_request('getWaterTank', waterTankName=name)
+    def get_water_tank(self, name: str, return_exceptions=False) -> dict:
+        return self.send_request('getWaterTank', waterTankName=name, return_exceptions=return_exceptions)
 
-    def fill_water_tank(self, name: str, enabled: bool, force: bool=False):
-        return self.send_request('fillWaterTank', waterTankName=name, enabled=enabled, force=force)
+    def fill_water_tank(self, name: str, enabled: bool, force: bool=False, return_exceptions=False):
+        return self.send_request('fillWaterTank', waterTankName=name, enabled=enabled, force=force, return_exceptions=return_exceptions)
 
-    def set_water_tank_active(self, name: str, active: bool):
-        return self.send_request('setWaterTankActive', waterTankName=name, active=active)
+    def set_water_tank_active(self, name: str, active: bool, return_exceptions=False):
+        return self.send_request('setWaterTankActive', waterTankName=name, active=active, return_exceptions=return_exceptions)
 
-    def set_operation_mode(self, mode: OperationMode):
-        return self.send_request('setMode', mode=mode.value)
+    def set_operation_mode(self, mode: OperationMode, return_exceptions=False):
+        return self.send_request('setMode', mode=mode.value, return_exceptions=return_exceptions)
     
-    def get_operation_mode(self) -> OperationMode:
+    def get_operation_mode(self, return_exceptions=False) -> OperationMode:
         def _operation_mode_factory(value=0):
             return OperationMode(value) if value else OperationMode.MANUAL
-        return self.send_request('getMode', response_type=_operation_mode_factory)
+        return self.send_request('getMode', response_type=_operation_mode_factory, return_exceptions=return_exceptions)
 
-    def reset(self):
-        return self.send_request('reset')
+    def reset(self, return_exceptions=False):
+        return self.send_request('reset', return_exceptions=return_exceptions)
 
-    def create_io(self, pin: int, type_: IOType=IOType.DIGITAL):
-        return self.send_request('createIO', pin=pin, type=type_.value, request_class=_TestRequest)
+    def create_io(self, pin: int, type_: IOType=IOType.DIGITAL, return_exceptions=False):
+        return self.send_request('createIO', pin=pin, type=type_.value, request_class=_TestRequest, return_exceptions=return_exceptions)
 
-    def set_io_value(self, pin: int, value: int):
-        return self.send_request('setIOValue', pin=pin, value=value, request_class=_TestRequest)
+    def set_io_value(self, pin: int, value: int, return_exceptions=False):
+        return self.send_request('setIOValue', pin=pin, value=value, request_class=_TestRequest, return_exceptions=return_exceptions)
 
-    def get_io_value(self, pin: int) -> int:
-        return self.send_request('getIOValue', pin=pin, request_class=_TestRequest, response_type=int)
-
-    def clear_io(self):
-        return self.send_request('clearIOs', request_class=_TestRequest)
-
-    def set_clock_offset(self, value: int):
-        return self.send_request('setClockOffset', value=value, request_class=_TestRequest)
+    def get_io_value(self, pin: int, return_exceptions=False) -> int:
+        return self.send_request('getIOValue', pin=pin, request_class=_TestRequest, response_type=int, return_exceptions=return_exceptions)
     
-    def get_millis(self) -> int:
-        return self.send_request('getMillis', request_class=_TestRequest, response_type=int)
+    def set_io_source(self, source: IOSource, return_exceptions=False):
+        return self.send_request('setIOSource', source=source, request_class=_TestRequest, return_exceptions=return_exceptions)
 
-    def get_free_memory(self) -> int:
-        return self.send_request('freeMemory', request_class=_TestRequest, response_type=int)
+    def clear_io(self, return_exceptions=False):
+        return self.send_request('clearIOs', request_class=_TestRequest, return_exceptions=return_exceptions)
 
-    def reset_clock(self):
+    def set_clock_offset(self, value: int, return_exceptions=False):
+        return self.send_request('setClockOffset', value=value, request_class=_TestRequest, return_exceptions=return_exceptions)
+    
+    def get_millis(self, return_exceptions=False) -> int:
+        return self.send_request('getMillis', request_class=_TestRequest, response_type=int, return_exceptions=return_exceptions)
+
+    def get_free_memory(self, return_exceptions=False) -> int:
+        return self.send_request('freeMemory', request_class=_TestRequest, response_type=int, return_exceptions=return_exceptions)
+
+    def reset_clock(self, return_exceptions=False):
         self._clock_offset = 0
-        return self.send_request('resetClock', request_class=_TestRequest)
+        return self.send_request('resetClock', request_class=_TestRequest, return_exceptions=return_exceptions)
 
     def set_timeout(self, timeout):
         self._timeout = timeout
@@ -182,19 +217,27 @@ class APIClient:
     async def _request_timeout_routine(self, request_id, timeout):
         future, _ = self._future_responses[request_id]
         try:
-            await asyncio.wait_for(future, timeout)
+            await asyncio.wait_for(asyncio.shield(future), timeout)
         except asyncio.TimeoutError:
-            future.cancel()
+            if request_id in self._future_responses:
+                del self._future_responses[request_id]
         except asyncio.CancelledError:
             pass
-        if request_id in self._future_responses:
-            del self._future_responses[request_id]
+        except APIException:
+            pass
 
-    async def send_request(self, command, request_id=None, response_type=None, **params):
+    async def send_request(self, command, request_id=None, response_type=None, return_exceptions=False, **params):
         request = self.create_request(command=command, request_id=request_id, **params)
         payload = self.build_request_wrapper(request)
         future = await self.send_payload(payload, request.id, response_type=response_type)
-        return await future
+        gather = asyncio.gather(future, return_exceptions=return_exceptions)
+        try:
+            results = await asyncio.wait_for(gather, timeout=self._timeout)
+            return results[0]
+        except asyncio.TimeoutError:
+            if request_id in self._future_responses:
+                del self._future_responses[request_id]
+            raise
 
     async def send_payload(self, payload, request_id=None, response_type=None) -> asyncio.Future:
         _, writer = await self._open_stream_task
@@ -202,9 +245,8 @@ class APIClient:
         await writer.drain()
         future = asyncio.Future()
         self._future_responses[request_id] = FutureResponse(future, response_type)
-        if self._timeout:
-            timeout_routine = self._event_loop.create_task(self._request_timeout_routine(request_id, self._timeout))
-            self._timeout_tasks.append(timeout_routine)
+        timeout_routine = self._event_loop.create_task(self._request_timeout_routine(request_id, self.FUTURE_ALLOCATE_TIMEOUT))
+        self._timeout_tasks.append(timeout_routine)
         return future
 
     @staticmethod

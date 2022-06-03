@@ -661,3 +661,15 @@ async def test_set_water_tank_active(api_client: APIClient):
 
     assert water_tank['active'] == True
     assert water_tank['filling'] == True
+
+
+async def test_create_empty_water_tank(api_client: APIClient):
+    """Platform should respond with en error when trying to create a water tank without a name"""
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = '', 1, 1.5, 2.5
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor)
+
+    response = exc_info.value.response
+    assert response.exception_type is APIInvalidRequest
+    assert response.message == 'Cannot create a resource with an empty name'

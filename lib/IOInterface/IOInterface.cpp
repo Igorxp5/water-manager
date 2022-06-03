@@ -11,6 +11,10 @@ IOInterface** IOInterface::ios = NULL;
 unsigned int* IOInterface::ioPins = NULL;
 unsigned int IOInterface::totalIos = 0;
 
+#ifdef TEST
+IOSource IOInterface::source = VIRTUAL;
+#endif
+
 IOInterface::IOInterface(unsigned int pin, IOMode mode, IOType type) {
     this->pin = pin;
     this->mode = mode;
@@ -76,28 +80,52 @@ int IOInterface::getIndex(unsigned int pin) {
 }
 
 unsigned int IOInterface::read() {
-	#ifndef TEST
 	if (type == ANALOGIC) {
+		#ifndef TEST
 		return analogRead(this->pin);
+		#else
+		if (IOInterface::source == PHYSICAL) {
+			return analogRead(this->pin);
+		} else {
+			return this->value;
+		}
+		#endif
 	} else if (type == DIGITAL) {
+		#ifndef TEST
 		return (unsigned int) digitalRead(this->pin);
+		#else
+		if (IOInterface::source == PHYSICAL) {
+			return (unsigned int) digitalRead(this->pin);
+		} else {
+			return this->value;
+		}
+		#endif
 	}
-	#else
-	return this->value;
-	#endif
 	return 0;
 }
 
 void IOInterface::write(unsigned int value) {
-	#ifndef TEST
 	if (type == ANALOGIC) {
+		#ifndef TEST
 		analogWrite(this->pin, value);
+		#else
+		if (IOInterface::source == PHYSICAL) {
+			analogWrite(this->pin, value);
+		} else {
+			this->value = value;
+		}
+		#endif
 	} else if (type == DIGITAL) {
+		#ifndef TEST
 		digitalWrite(this->pin, value);
+		#else
+		if (IOInterface::source == PHYSICAL) {
+			digitalWrite(this->pin, value);
+		} else {
+			this->value = value;
+		}
+		#endif
 	}
-	#else
-	this->value = value;
-	#endif
 }
 
 
