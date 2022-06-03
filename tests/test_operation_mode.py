@@ -41,7 +41,7 @@ async def test_reset_back_to_manual_mode(api_client: APIClient):
     assert mode is OperationMode.MANUAL
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail(reason='This test case cannot be implemented')
 async def test_reset_close_water_sources(api_client: APIClient):
     """Platform should turn off all water sources before resetting the API"""
     raise NotImplementedError

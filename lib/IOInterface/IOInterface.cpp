@@ -44,7 +44,7 @@ IOInterface* IOInterface::get(unsigned int pin) {
 void IOInterface::remove(unsigned int pin) {
     int ioIndex = IOInterface::getIndex(pin);
 	if (ioIndex == ITEM_NOT_FOUND) {
-		return Exception::throwException(PIN_NOT_FOUND);
+		return Exception::throwException(&PIN_NOT_FOUND);
 	}
 	delete IOInterface::ios[ioIndex];
 

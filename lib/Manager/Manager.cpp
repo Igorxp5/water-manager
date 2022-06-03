@@ -5,7 +5,7 @@
 
 const int ITEM_NOT_FOUND = -1;
 
-Manager::Manager() {
+Manager::Manager() : waterTanksLoopErrors() {
     this->waterTanksErrorsTimer = new Clock();
     this->waterTanksErrorsTimer->startTimer();
 }
@@ -45,7 +45,7 @@ WaterTank* Manager::getWaterTank(char* name) {
     WaterTank* waterTank = NULL;
     int waterTankIndex = this->getWaterTankIndex(name);
     if (waterTankIndex == ITEM_NOT_FOUND) {
-        Exception::throwException(WATER_TANK_NOT_FOUND);
+        Exception::throwException(&WATER_TANK_NOT_FOUND);
     } else {
         waterTank = this->waterTanks[waterTankIndex]; 
     }
@@ -56,7 +56,7 @@ WaterSource* Manager::getWaterSource(char* name) {
     WaterSource* waterSource = NULL;
     int waterSourceIndex = this->getWaterSourceIndex(name);
     if (waterSourceIndex == ITEM_NOT_FOUND) {
-        Exception::throwException(WATER_SOURCE_NOT_FOUND);
+        Exception::throwException(&WATER_SOURCE_NOT_FOUND);
     } else {
         waterSource = this->waterSources[waterSourceIndex];
     }
@@ -105,25 +105,29 @@ unsigned int Manager::getTotalWaterTanks() {
     return this->totalWaterTanks;
 }
 
-void Manager::setWaterSourceState(char* name, bool enabled) {
+void Manager::setWaterSourceState(char* name, bool enabled, bool force) {
     WaterSource* waterSource = this->getWaterSource(name);
     if (!Exception::hasException()) {
         if (this->mode == AUTO) {
-            return Exception::throwException(CANNOT_HANDLE_WATER_SOURCE_IN_AUTO);
+            return Exception::throwException(&CANNOT_HANDLE_WATER_SOURCE_IN_AUTO);
         }
         if (enabled) {
-            waterSource->enable();
+            waterSource->turnOn(force);
         } else {
-            waterSource->disable();
+            waterSource->turnOff();
         }
     }
 }
 
+void Manager::setWaterSourceState(char* name, bool enabled) {
+    return this->setWaterSourceState(name, enabled, false);
+}
+
 void Manager::registerWaterSource(char* name, WaterSource* waterSource) {
     if (this->isWaterSourceRegistered(name)) {
-        return Exception::throwException(WATER_SOURCE_ALREADY_REGISTERED);
+        return Exception::throwException(&WATER_SOURCE_ALREADY_REGISTERED);
     } else if(this->totalWaterSources + 1 > MAX_WATER_SOURCES) {
-        return Exception::throwException(MAX_WATER_SOURCES_ERROR);
+        return Exception::throwException(&MAX_WATER_SOURCES_ERROR);
     } else {
         this->totalWaterSources += 1;
 
@@ -136,9 +140,9 @@ void Manager::registerWaterSource(char* name, WaterSource* waterSource) {
 
 void Manager::registerWaterTank(char* name, WaterTank* waterTank) {
     if (this->isWaterTankRegistered(name)) {
-        return Exception::throwException(WATER_TANK_ALREADY_REGISTERED);
+        return Exception::throwException(&WATER_TANK_ALREADY_REGISTERED);
     } else if(this->totalWaterTanks + 1 > MAX_WATER_TANKS) {
-        return Exception::throwException(MAX_WATER_TANKS_ERROR);
+        return Exception::throwException(&MAX_WATER_TANKS_ERROR);
     } else {
         this->totalWaterTanks += 1;
 
@@ -153,9 +157,9 @@ WaterSource* Manager::unregisterWaterSource(char* name) {
     WaterSource* waterSource = NULL;
 
     if (!this->isWaterSourceRegistered(name)) {
-        Exception::throwException(WATER_SOURCE_NOT_FOUND);
+        Exception::throwException(&WATER_SOURCE_NOT_FOUND);
     } else if (this->isWaterSourceDependency(name)) {
-        Exception::throwException(CANNOT_REMOVE_WATER_SOURCE_DEPENDENCY);
+        Exception::throwException(&CANNOT_REMOVE_WATER_SOURCE_DEPENDENCY);
     } else {
         int waterSourceIndex = this->getWaterSourceIndex(name);
 
@@ -183,9 +187,9 @@ WaterTank* Manager::unregisterWaterTank(char* name) {
     WaterTank* waterTank = NULL;
 
     if (!this->isWaterTankRegistered(name)) {
-        Exception::throwException(WATER_TANK_NOT_FOUND);
+        Exception::throwException(&WATER_TANK_NOT_FOUND);
     } else if (this->isWaterTankDependency(name)) {
-        Exception::throwException(CANNOT_REMOVE_WATER_TANK_DEPENDENCY);
+        Exception::throwException(&CANNOT_REMOVE_WATER_TANK_DEPENDENCY);
     } else {
         int waterTankIndex = this->getWaterTankIndex(name);
 
@@ -267,7 +271,7 @@ bool Manager::isIOInterfaceDependency(IOInterface* io) {
 
 void Manager::fillWaterTank(char* name, bool force) {
     if (this->mode == AUTO) {
-        return Exception::throwException(CANNOT_HANDLE_WATER_TANK_IN_AUTO);
+        return Exception::throwException(&CANNOT_HANDLE_WATER_TANK_IN_AUTO);
     }
     WaterTank* waterTank = this->getWaterTank(name);
     if (waterTank != NULL) {
@@ -277,7 +281,7 @@ void Manager::fillWaterTank(char* name, bool force) {
 
 void Manager::stopFillingWaterTank(char* name) {
     if (this->mode == AUTO) {
-        return Exception::throwException(CANNOT_HANDLE_WATER_TANK_IN_AUTO);
+        return Exception::throwException(&CANNOT_HANDLE_WATER_TANK_IN_AUTO);
     }
     WaterTank* waterTank = this->getWaterTank(name);
     if (waterTank != NULL) {
@@ -289,16 +293,20 @@ void Manager::loop() {
     if (this->mode == AUTO) {
         for (unsigned int i = 0; i < this->totalWaterTanks; i++) {
             this->waterTanks[i]->loop();
-            this->waterTanksLoopErrors[i] = (const RuntimeError*) Exception::popException();
+            this->waterTanksLoopErrors[i] = Exception::popException();
         }
-        if (this->waterTanksErrorsTimer->getElapsedTime() >= ERROR_INTERVAL) {
-            const RuntimeError* error = NULL;
-            unsigned int endIndex = min(0, this->waterTankErrorIndex - 1);
+        if (this->totalWaterTanks > 0 && this->waterTanksErrorsTimer->getElapsedTime() >= ERROR_INTERVAL) {
+            const Exception* error = NULL;
+            char* waterTankName = this->waterTankNames[this->waterTankErrorIndex];
+            int endIndex = max(0, this->waterTankErrorIndex - 1);
             do {
                 error = this->waterTanksLoopErrors[this->waterTankErrorIndex];
+                waterTankName = this->waterTankNames[this->waterTankErrorIndex];
                 this->waterTankErrorIndex = (this->waterTankErrorIndex + 1) % this->totalWaterTanks;
             } while(error == NULL && this->waterTankErrorIndex != endIndex);
-            Exception::throwException(error, this->waterTankNames[this->waterTankErrorIndex]);
+            if (error != NULL) {
+                Exception::throwException(error, waterTankName);
+            }
             this->waterTanksErrorsTimer->startTimer();
         }
     }

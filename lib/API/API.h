@@ -21,9 +21,12 @@ class API
         void setWaterZeroVolume(char* name, float pressure);
         void setWaterTankVolumeFactor(char* name, float volumeFactor);
         void setWaterTankPressureFactor(char* name, float pressureFactor);
+        void setWaterTankPressureChangingValue(char* name, float pressureChangingValue);
+        void setWaterTankActive(char* name, bool active);
         void setOperationMode(byte mode);
         byte getOperationMode();
-        void setWaterSourceState(char* name, bool enabled);
+        void setWaterSourceState(char* name, bool enabled, bool force);
+        void setWaterSourceActive(char* name, bool active);
         WaterSource* getWaterSource(char* name);
         WaterTank* getWaterTank(char* name);
         char* getWaterSourceName(WaterSource* waterSource);

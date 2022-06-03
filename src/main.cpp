@@ -101,30 +101,34 @@ void sendErrorResponse(unsigned int requestId, const char* error, char* arg) {
     response.which_content = Response_error_tag;
     strncpy(response.content.error.message, error, MAX_ERROR_LENGTH);
     if (arg != NULL) {
-        strncpy(response.content.error.arg, arg, MAX_NAME_LENGTH);
+        strncpy(response.content.error.arg, arg, MAX_ERROR_ARG_LENGTH);
     }
     sendResponse();
 }
 
-void sendErrorResponse(unsigned int requestId, const RuntimeError* error, char* arg) {
-    response.content.error.type = Error_Exception_RUNTIME_ERROR;
+void sendErrorResponse(unsigned int requestId, const Exception* error, char* arg) {
+    switch (error->getExceptionType())
+    {
+    case RUNTIME_ERROR:
+        response.content.error.type = Error_Exception_RUNTIME_ERROR;
+        break;
+    case INVALID_REQUEST:
+        response.content.error.type = Error_Exception_INVALID_REQUEST;
+        break;
+    default:
+    response.content.error.type = Error_Exception_EXCEPTION;
+        break;
+    }
     const char* message = ((Exception*) error)->getMessage();
     sendErrorResponse(requestId, message, arg);
-    delete error;
 }
 
-void sendErrorResponse(unsigned int requestId, const RuntimeError* error) {
+void sendErrorResponse(unsigned int requestId, const Exception* error) {
     sendErrorResponse(requestId, error, NULL);
 }
 
 void sendErrorResponse(unsigned int requestId, const char* error) {
     sendErrorResponse(requestId, error, NULL);
-}
-
-void sendErrorResponse(unsigned int requestId, const InvalidRequest* error) {
-    response.content.error.type = Error_Exception_INVALID_REQUEST;
-    const char* message = ((Exception*) error)->getMessage();
-    sendErrorResponse(requestId, message);
 }
 
 void sendOkResponse(unsigned int requestId) {
@@ -155,7 +159,10 @@ void handleAPIRequest() {
     } else if (request.which_message == Request_removeWaterSource_tag) {
         api->removeWaterSource(request.message.removeWaterSource.waterSourceName);
     } else if (request.which_message == Request_setWaterSourceState_tag) {
-        api->setWaterSourceState(request.message.setWaterSourceState.waterSourceName, request.message.setWaterSourceState.state);
+        api->setWaterSourceState(request.message.setWaterSourceState.waterSourceName, request.message.setWaterSourceState.state,
+                                 request.message.setWaterSourceState.force);
+    } else if (request.which_message == Request_setWaterSourceActive_tag) {
+        api->setWaterSourceActive(request.message.setWaterSourceActive.waterSourceName, request.message.setWaterSourceActive.active);
     } else if (request.which_message == Request_getWaterSource_tag) {
         WaterSource* waterSource = api->getWaterSource(request.message.getWaterSource.waterSourceName);
         if (waterSource != NULL) {
@@ -163,7 +170,8 @@ void handleAPIRequest() {
             WaterSourceState waterSourceState = WaterSourceState_init_zero;
             strncpy(waterSourceState.name, request.message.getWaterSource.waterSourceName, MAX_NAME_LENGTH);
             waterSourceState.pin = waterSource->getPin();
-            waterSourceState.enabled = waterSource->isEnabled();
+            waterSourceState.active = waterSource->isActive();
+            waterSourceState.turnedOn = waterSource->isTurnedOn();
             if (waterSource->getWaterTank() != NULL) {
                 waterSourceState.has_sourceWaterTank = true;
                 strncpy(waterSourceState.sourceWaterTank, api->getWaterTankName(waterSource->getWaterTank()), MAX_NAME_LENGTH);
@@ -200,11 +208,13 @@ void handleAPIRequest() {
             strncpy(waterTankState.name, request.message.getWaterTank.waterTankName, MAX_NAME_LENGTH);
             waterTankState.pressureSensorPin = waterTank->getPressureSensorPin();
             waterTankState.filling = waterTank->isFilling();
+            waterTankState.active = waterTank->isActive();
             waterTankState.volumeFactor = waterTank->volumeFactor;
             waterTankState.pressureFactor = waterTank->pressureFactor;
             waterTankState.minimumVolume = waterTank->minimumVolume;
             waterTankState.maxVolume = waterTank->maxVolume;
             waterTankState.zeroVolumePressure = waterTank->zeroVolumePressure;
+            waterTankState.pressureChangingValue = waterTank->pressureChangingValue;
             waterTankState.rawPressureValue = waterTank->getPressureRawValue();
             waterTankState.pressure = waterTank->getPressure();
             waterTankState.volume = waterTank->getVolume();
@@ -224,6 +234,10 @@ void handleAPIRequest() {
         api->setWaterTankVolumeFactor(request.message.setWaterTankVolumeFactor.waterTankName, request.message.setWaterTankVolumeFactor.value);
     } else if (request.which_message == Request_setWaterTankPressureFactor_tag) {
         api->setWaterTankPressureFactor(request.message.setWaterTankPressureFactor.waterTankName, request.message.setWaterTankPressureFactor.value);
+    } else if (request.which_message == Request_setWaterTankPressureChangingValue_tag) {
+        api->setWaterTankPressureChangingValue(request.message.setWaterTankPressureChangingValue.waterTankName, request.message.setWaterTankPressureChangingValue.value);
+    } else if (request.which_message == Request_setWaterTankActive_tag) {
+        api->setWaterTankActive(request.message.setWaterTankActive.waterTankName, request.message.setWaterTankActive.active);
     } else if (request.which_message == Request_fillWaterTank_tag) {
         api->fillWaterTank(request.message.fillWaterTank.waterTankName, request.message.fillWaterTank.enabled, request.message.fillWaterTank.force);
     } else if (request.which_message == Request_setMode_tag) {
@@ -242,12 +256,8 @@ void handleAPIRequest() {
     if (!Exception::hasException()) {
         sendOkResponse(request.id);
     } else {
-        Exception* exception = (Exception*) Exception::popException();
-        if (exception->getExceptionType() == RUNTIME_ERROR) {
-            sendErrorResponse(request.id, (const RuntimeError*) exception);
-        } else if (exception->getExceptionType() == INVALID_REQUEST) {
-            sendErrorResponse(request.id, (const InvalidRequest*) exception);
-        }
+        const Exception* exception = Exception::popException();
+        sendErrorResponse(request.id, exception);
     }
 }
 
@@ -395,8 +405,12 @@ void loop() {
     api->loop();
 
     if (Exception::hasException()) {
-        Exception* exception = (Exception*) Exception::popException();
+        const Exception* exception = Exception::popException();
         char* exceptionArg = Exception::popExceptionArg();
-        sendErrorResponse(0, (const RuntimeError*) exception, exceptionArg);
+        // do not try to send errors when the other side can't receive  
+        if (apiSerial->availableForWrite()) {
+            sendErrorResponse(0, exception, exceptionArg);
+            freeResponseBuffer();
+        }
     }
 }

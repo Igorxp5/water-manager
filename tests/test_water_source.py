@@ -169,8 +169,9 @@ async def test_create_water_source_with_water_tank_source(api_client: APIClient)
     water_source = await api_client.get_water_source(water_source_name)
 
     assert water_source['name'] == water_source_name
+    assert water_source['active'] == True
     assert water_source['pin'] == water_source_pin
-    assert water_source['enabled'] == False
+    assert water_source['turnedOn'] == False
     assert water_source['sourceWaterTank'] == water_tank_name
 
 
@@ -209,8 +210,9 @@ async def test_get_water_source(api_client: APIClient):
     water_source = await api_client.get_water_source(name)
 
     assert water_source['name'] == name
+    assert water_source['active'] == True
     assert water_source['pin'] == pin
-    assert water_source['enabled'] == False
+    assert water_source['turnedOn'] == False
     assert not water_source['sourceWaterTank']
 
 
@@ -237,7 +239,7 @@ async def test_set_water_source_state_manual_mode(api_client: APIClient):
         for state in [True, False]:
             await api_client.set_water_source_state(name, state)
             water_source = await api_client.get_water_source(name)
-            assert water_source['enabled'] == state
+            assert water_source['turnedOn'] == state
         
         await api_client.set_operation_mode(OperationMode.AUTO)
         await api_client.set_operation_mode(OperationMode.MANUAL)
@@ -278,3 +280,87 @@ async def test_create_water_source_with_invalid_water_tank(api_client: APIClient
     response = exc_info.value.response
     assert response.exception_type is APIInvalidRequest
     assert response.message == 'Could not find a water tank with the name provided'    
+
+
+async def test_set_water_source_state_with_water_wank_minimum_volume(api_client: APIClient):
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor)
+
+    await api_client.create_water_source(water_source_name, water_source_pin, water_tank_name)
+
+    with pytest.raises(APIInvalidRequest) as exc_info:
+        await api_client.set_water_source_state(water_source_name, True)
+    
+    response = exc_info.value.response
+    assert response.message == 'Cannot open a water source, the underlying water tank is under the minimum threshold'
+
+
+async def test_set_water_source_force(api_client: APIClient):
+    """
+    Platform should be able to turn on water source even its water tank is under the minimum volume
+    or the water source is deactivated.
+    """
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor)
+
+    await api_client.create_water_source(water_source_name, water_source_pin, water_tank_name)
+
+    await api_client.set_water_source_state(water_source_name, True, force=True)
+
+    water_source = await api_client.get_water_source(water_source_name)
+
+    assert water_source['turnedOn']
+
+    await api_client.set_water_source_state(water_source_name, False)
+
+    water_source = await api_client.get_water_source(water_source_name)
+
+    assert not water_source['turnedOn']
+
+    await api_client.set_water_source_active(water_source_name, False)
+
+    await api_client.set_water_source_state(water_source_name, True, force=True)
+
+    water_source = await api_client.get_water_source(water_source_name)
+
+    assert water_source['turnedOn']
+
+
+async def test_set_water_source_active(api_client: APIClient):
+    """
+    Platform should be able to active and deactivate a water source.
+    Platform respond with an error when trying to turn on a deactivateed water source.
+    Platform should turn off water source when it's deactivated.
+    """
+    name, pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(name, pin)
+
+    water_source = await api_client.get_water_source(name)
+
+    assert water_source['active'] == True
+    assert water_source['turnedOn'] == False
+
+    await api_client.set_water_source_state(name, True)
+
+    water_source = await api_client.get_water_source(name)
+
+    assert water_source['active'] == True
+    assert water_source['turnedOn'] == True
+    
+    await api_client.set_water_source_active(name, False)
+
+    water_source = await api_client.get_water_source(name)
+
+    assert water_source['active'] == False
+    assert water_source['turnedOn'] == False
+
+    with pytest.raises(APIInvalidRequest) as exc_info: 
+        await api_client.set_water_source_state(name, True)
+
+    response = exc_info.value.response
+    assert response.message == 'Cannot turn on a deactivated water source'

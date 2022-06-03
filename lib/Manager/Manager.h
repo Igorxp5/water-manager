@@ -31,6 +31,7 @@ class Manager
         unsigned int getTotalWaterTanks();
         unsigned int getTotalWaterSources();
         void setWaterSourceState(char* name, bool enabled);
+        void setWaterSourceState(char* name, bool enabled, bool force);
         void registerWaterSource(char* name, WaterSource* waterSource);
         void registerWaterTank(char* name, WaterTank* waterTank);
         bool isWaterSourceRegistered(char* name);
@@ -54,8 +55,8 @@ class Manager
         unsigned int totalWaterTanks = 0;
         unsigned int totalWaterSources = 0;
         Clock* waterTanksErrorsTimer;
-        unsigned int waterTankErrorIndex = 0;
-        const RuntimeError* waterTanksLoopErrors[MAX_WATER_TANKS];
+        int waterTankErrorIndex = 0;
+        const Exception* waterTanksLoopErrors[MAX_WATER_TANKS];
 
         int getWaterTankIndex(char* name);
         int getWaterSourceIndex(char* name);

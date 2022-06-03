@@ -38,6 +38,8 @@ class APIClient:
 
         self._unmapped_error_responses = VolatileQueue()
 
+        self._clock_offset = 0
+
     def __del__(self):
         self.close()
 
@@ -47,8 +49,11 @@ class APIClient:
     def get_water_source(self, name: str) -> dict:
         return self.send_request('getWaterSource', waterSourceName=name)
 
-    def set_water_source_state(self, name: str, enabled: bool):
-        return self.send_request('setWaterSourceState', waterSourceName=name, state=enabled)
+    def set_water_source_state(self, name: str, enabled: bool, force: bool=False):
+        return self.send_request('setWaterSourceState', waterSourceName=name, state=enabled, force=force)
+
+    def set_water_source_active(self, name: str, active: bool):
+        return self.send_request('setWaterSourceActive', waterSourceName=name, active=active)
 
     def remove_water_source(self, name: str):
         return self.send_request('removeWaterSource', waterSourceName=name)
@@ -78,6 +83,9 @@ class APIClient:
     def set_water_tank_pressure_factor(self, name: str, value: float):
         return self.send_request('setWaterTankPressureFactor', waterTankName=name, value=value)
 
+    def set_water_tank_pressure_changing_value(self, name: str, value: float):
+        return self.send_request('setWaterTankPressureChangingValue', waterTankName=name, value=value)
+
     def get_water_tank_list(self) -> list:
         return self.send_request('getWaterTankList', response_type=list)
     
@@ -86,6 +94,9 @@ class APIClient:
 
     def fill_water_tank(self, name: str, enabled: bool, force: bool=False):
         return self.send_request('fillWaterTank', waterTankName=name, enabled=enabled, force=force)
+
+    def set_water_tank_active(self, name: str, active: bool):
+        return self.send_request('setWaterTankActive', waterTankName=name, active=active)
 
     def set_operation_mode(self, mode: OperationMode):
         return self.send_request('setMode', mode=mode.value)
@@ -120,10 +131,15 @@ class APIClient:
         return self.send_request('freeMemory', request_class=_TestRequest, response_type=int)
 
     def reset_clock(self):
+        self._clock_offset = 0
         return self.send_request('resetClock', request_class=_TestRequest)
-    
+
     def set_timeout(self, timeout):
         self._timeout = timeout
+
+    async def advance_clock(self, seconds: int):
+        self._clock_offset += seconds * 1000
+        await self.set_clock_offset(self._clock_offset)
 
     def close(self):
         tasks = itertools.chain(self._timeout_tasks, (self._read_responses_task,))

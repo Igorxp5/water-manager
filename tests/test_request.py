@@ -69,7 +69,7 @@ async def test_handle_after_truncated_messages(api_client: APIClient):
 
     assert not water_sources
 
-@pytest.mark.xfail
+@pytest.mark.xfail(reason='APIClient currently does not support large requests')
 async def test_send_large_invalid_request(api_client: APIClient):
     """
     Platform should not crash when receiving a large request.

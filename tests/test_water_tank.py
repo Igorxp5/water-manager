@@ -397,6 +397,23 @@ async def test_set_water_tank_zero_volume_factor(api_client: APIClient):
             await asyncio.sleep(0.01)
 
 
+async def test_set_water_tank_pressure_changing_value(api_client: APIClient):
+    """Platform should be able to set water tank pressure changing value"""
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert math.isclose(water_tank['pressureChangingValue'], 0.2, rel_tol=FLOAT_ERROR_TOLERANCE)
+
+    await api_client.set_water_tank_pressure_changing_value(water_tank_name, 1)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert math.isclose(water_tank['pressureChangingValue'], 1, rel_tol=FLOAT_ERROR_TOLERANCE)
+
+
 async def test_fill_invalid_water_tank(api_client: APIClient):
     """
     Platform should be respond with an error when trying to fill a 
@@ -597,3 +614,50 @@ async def test_fill_water_tank_without_water_source_force(api_client: APIClient)
     water_tank = await api_client.get_water_tank(water_tank_name)
 
     assert not water_tank['filling']
+
+
+async def test_set_water_tank_active(api_client: APIClient):
+    """
+    Platform should be able to active and deactivate a water tank.
+    Platform should responnd with an error when trying to fill a deactivateed water tank.
+    Platform should stop to fill water tank when it's deactivated.
+    """
+    water_tank_name, pressure_sensor, volume_factor, pressure_factor = 'Bottom tank', 1, 1.5, 2.5
+    water_source_name, water_source_pin = 'Compesa water source', 15
+
+    await api_client.create_water_source(water_source_name, water_source_pin)
+    await api_client.create_water_tank(water_tank_name, pressure_sensor, volume_factor, pressure_factor, water_source_name)
+
+    await api_client.set_water_tank_max_volume(water_tank_name, 20)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert water_tank['active'] == True
+    assert water_tank['filling'] == False
+
+    await api_client.fill_water_tank(water_tank_name, True)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert water_tank['active'] == True
+    assert water_tank['filling'] == True
+    
+    await api_client.set_water_tank_active(water_tank_name, False)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert water_tank['active'] == False
+    assert water_tank['filling'] == False
+
+    with pytest.raises(APIInvalidRequest) as exc_info: 
+        await api_client.fill_water_tank(water_tank_name, True)
+
+    response = exc_info.value.response
+    assert response.message == 'Cannot fill a deactivated water tank'
+
+    await api_client.fill_water_tank(water_tank_name, True, True)
+
+    water_tank = await api_client.get_water_tank(water_tank_name)
+
+    assert water_tank['active'] == True
+    assert water_tank['filling'] == True
