@@ -49,7 +49,7 @@ const Exception WATER_TANK_ALREADY_REGISTERED = Exception(
 
 const Exception WATER_TANK_HAS_STOPPED_TO_FILL = Exception("The water tank has stopped to fill", RUNTIME_ERROR);
 const Exception WATER_TANK_IS_NOT_FILLING = Exception("The water tank is not filling", RUNTIME_ERROR);
-const Exception MAX_TIME_WATER_TANK_NOT_FILLING = Exception("The water tank deactivated. It has stopped to fill", RUNTIME_ERROR);
+const Exception MAX_TIME_WATER_TANK_NOT_FILLING = Exception("Water tank deactivated. It has stopped to fill", RUNTIME_ERROR);
 
 const Exception CANNOT_FILL_DEACTIVATED_WATER_TANK = Exception(
     "Cannot fill a deactivated water tank", INVALID_REQUEST);
