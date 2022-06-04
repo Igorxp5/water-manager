@@ -7,6 +7,9 @@ from .lib.api import APIClient
 
 LOGGER = logging.getLogger(__name__)
 
+MAX_WATER_TANKS = 5
+MAX_WATER_SOURCES = 5
+
 
 async def test_create_max_items(api_client: APIClient):
     """
@@ -14,8 +17,8 @@ async def test_create_max_items(api_client: APIClient):
     water sources/water tanks.
     """
     volume_factor, pressure_factor = 1.5, 2.5
-    expected_water_sources = [(f'Water source {i}', i) for i in range(1, 11)]
-    expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, 11)]
+    expected_water_sources = [(f'Water source {i}', i) for i in range(1, MAX_WATER_TANKS + 1)]
+    expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, MAX_WATER_SOURCES + 1)]
 
     for name, pin in expected_water_sources:
         free_memory = await api_client.get_free_memory()
@@ -67,12 +70,12 @@ async def test_create_infinite_ios_by_creating_water_sources_and_tanks(api_clien
                 await api_client.create_water_tank(water_tank, pressure_sensor, volume_factor, pressure_factor)
                 water_tanks.append(water_tank)
 
-            if len(water_sources) == 10:
+            if len(water_sources) == MAX_WATER_SOURCES:
                 for water_source_name in water_sources[:2]:
                     await api_client.remove_water_source(water_source_name)
                     water_sources.remove(water_source_name)
             
-            if len(water_tanks) == 10:
+            if len(water_tanks) == MAX_WATER_TANKS:
                 for water_tank_name in water_tanks[:2]:
                     await api_client.remove_water_tank(water_tank_name)
                     water_tanks.remove(water_tank_name)
@@ -100,8 +103,8 @@ async def test_memory_leak_by_restting_many_times(api_client: APIClient):
         LOGGER.info(f'Starting loop {iteration}/{total}... Current free memory: {free_memory} bytes')
 
         volume_factor, pressure_factor = 1.5, 2.5
-        expected_water_sources = [(f'Water source {i}', i) for i in range(1, 11)]
-        expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, 11)]
+        expected_water_sources = [(f'Water source {i}', i) for i in range(1, MAX_WATER_SOURCES + 1)]
+        expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, MAX_WATER_TANKS + 1)]
 
         for name, pin in expected_water_sources:
             await api_client.create_water_source(name, pin)
@@ -127,3 +130,35 @@ async def test_memory_leak_by_restting_many_times(api_client: APIClient):
     end_free_memory = await api_client.get_free_memory()
 
     assert end_free_memory + 100 >= start_free_memory
+
+
+async def test_save_resources(api_client: APIClient, clear_eeprom):
+    """
+    Platform should be able to save all resources created in 
+    the EPPROM and load them when it boots
+    """
+    volume_factor, pressure_factor = 1.5, 2.5
+    expected_water_sources = [(f'Water source {i}', i) for i in range(1, MAX_WATER_TANKS + 1)]
+    expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, MAX_WATER_SOURCES + 1)]
+
+    for name, pin in expected_water_sources:
+        await api_client.create_water_source(name, pin)
+        await asyncio.sleep(0.1)
+    
+    for name, pressure_sensor in expected_water_tanks:
+        await api_client.create_water_tank(name, pressure_sensor, volume_factor, pressure_factor)
+        await asyncio.sleep(0.1)
+
+    await api_client.save()
+
+    await api_client.reset()
+
+    await api_client.load_api_from_eeprom()
+
+    water_tanks = await api_client.get_water_tank_list()
+    
+    assert water_tanks == [name for name, _ in expected_water_tanks]
+
+    water_sources = await api_client.get_water_source_list()
+    
+    assert water_sources == [name for name, _ in expected_water_sources]

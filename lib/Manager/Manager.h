@@ -10,8 +10,8 @@
 #include "Clock.h"
 
 const byte MAX_NAME_LENGTH = 20;
-const byte MAX_WATER_SOURCES = 10;
-const byte MAX_WATER_TANKS = 10;
+const byte MAX_WATER_SOURCES = 5;
+const byte MAX_WATER_TANKS = 5;
 const unsigned int ERROR_INTERVAL = 10 * 1000;
 
 class Manager

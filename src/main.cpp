@@ -6,27 +6,15 @@
 #include "API.h"
 #include "Clock.h"
 #include "IOInterface.h"
+#include "Persister.h"
 #include "api.pb.c"
 
-#include "Utils.h"
 
 #ifdef TEST
+#include "Utils.h"
 #include "test.pb.c"
 #include "MemoryFree.h"
 #endif
-
-const unsigned int READ_TIMEOUT = 2500; //Miliseconds
-
-API* api;
-Clock* readerTimer;
-HardwareSerial* apiSerial = &Serial;
-
-void setup() {
-    apiSerial->begin(9600);
-    apiSerial->setTimeout(READ_TIMEOUT);
-    api = new API();
-    readerTimer = new Clock();
-}
 
 /*
 The Protobuf messages are transfered using following format:
@@ -46,6 +34,8 @@ const unsigned int MAX_MESSAGE_SIZE = max(Request_size, _TestRequest_size);
 const unsigned int MAX_MESSAGE_SIZE = Request_size;
 #endif
 
+const unsigned int READ_TIMEOUT = 2500; //Miliseconds
+
 byte requestBuffer[Request_size];
 byte responseBuffer[Response_size];
 byte messageType = 0;
@@ -59,6 +49,10 @@ Request request = Request_init_zero;
 Response response = Response_init_zero;
 pb_istream_t requestStream;
 pb_ostream_t responseStream;
+
+API* api;
+Clock* readerTimer;
+HardwareSerial* apiSerial = &Serial;
 
 #ifdef TEST
 byte testResponseBuffer[_TestResponse_size];
@@ -88,11 +82,11 @@ void sendResponse() {
     if(!pb_encode(&responseStream, Response_fields, &response)) {
         //TODO: Handle failed to encode response
     } else {
-        Serial.write((byte) 1); //API message type
+        apiSerial->write((byte) 1); //API message type
         unsigned int responseLength = (long unsigned int) responseStream.bytes_written;
-        Serial.write((byte*) &responseLength, sizeof(unsigned int));
-        Serial.write(responseBuffer, responseLength);
-        Serial.flush();
+        apiSerial->write((byte*) &responseLength, sizeof(unsigned int));
+        apiSerial->write(responseBuffer, responseLength);
+        apiSerial->flush();
     }
 }
 
@@ -182,10 +176,17 @@ void handleAPIRequest() {
         if (request.message.createWaterTank.has_waterSourceName) {
             api->createWaterTank(request.message.createWaterTank.name, request.message.createWaterTank.pressureSensorPin, 
                                  request.message.createWaterTank.volumeFactor, request.message.createWaterTank.pressureFactor,
+                                 request.message.createWaterTank.pressureChangingValue,
                                  request.message.createWaterTank.waterSourceName);
         } else {
-            api->createWaterTank(request.message.createWaterTank.name, request.message.createWaterTank.pressureSensorPin, 
-                                 request.message.createWaterTank.volumeFactor, request.message.createWaterTank.pressureFactor);
+            api->createWaterTank(request.message.createWaterTank.name, request.message.createWaterTank.pressureSensorPin,
+                                 request.message.createWaterTank.volumeFactor, request.message.createWaterTank.pressureFactor,
+                                 request.message.createWaterTank.pressureChangingValue);
+        }
+        if (!Exception::hasException()) {
+            api->setWaterTankMinimumVolume(request.message.createWaterTank.name, request.message.createWaterTank.minimumVolume);
+            api->setWaterTankMaxVolume(request.message.createWaterTank.name, request.message.createWaterTank.maxVolume);
+            api->setWaterZeroVolume(request.message.createWaterTank.name, request.message.createWaterTank.zeroVolumePressure);
         }
     } else if (request.which_message == Request_getWaterTankList_tag) {
         char** waterTankList = api->getWaterTankList();
@@ -249,18 +250,30 @@ void handleAPIRequest() {
             response.content.message.value.which_content = PrimitiveValue_intValue_tag;
             response.content.message.value.content.intValue = mode;
         }
+    } else if (request.which_message == Request_save_tag) {
+        Persister::save(api);
     } else if (request.which_message == Request_reset_tag) {
         api->reset();
         #ifdef TEST
         IOInterface::source = VIRTUAL;
         #endif
     }
+}
 
-    if (!Exception::hasException()) {
-        sendOkResponse(request.id);
-    } else {
-        const Exception* exception = Exception::popException();
-        sendErrorResponse(request.id, exception);
+void loadAPIDataFromEEPROM() {
+    byte totalSavedRequests = Persister::getTotalRequests();
+    if (totalSavedRequests > 0) {
+        if (!Persister::isAPIDataCorrupted()) {
+            for (byte i = 0; i < totalSavedRequests; i++) {
+                request = Persister::readRequest(i);
+                if (!Exception::hasException()) {
+                    handleAPIRequest();
+                }
+                freeRequestBuffer();
+            }
+        } else {
+            Exception::throwException(&SAVE_CORRUPTED);
+        }
     }
 }
 
@@ -271,11 +284,11 @@ void sendTestResponse() {
     if(!pb_encode(&responseStream, _TestResponse_fields, &testResponse)) {
         //TODO: Handle failed to encode response
     } else {
-        Serial.write((byte) 2); //Test message type
+        apiSerial->write((byte) 2); //Test message type
         unsigned int responseLength = (long unsigned int) responseStream.bytes_written;
-        Serial.write((byte*) &responseLength, sizeof(unsigned int));
-        Serial.write(testResponseBuffer, responseLength);
-        Serial.flush();
+        apiSerial->write((byte*) &responseLength, sizeof(unsigned int));
+        apiSerial->write(testResponseBuffer, responseLength);
+        apiSerial->flush();
     }
 }
 
@@ -357,9 +370,31 @@ void handleTestRequest() {
             IOInterface::source = PHYSICAL;
         }
         sendOkTestResponse(testRequest.id);
+    } else if (testRequest.which_message == _TestRequest_loadAPIFromEEPROM_tag) {
+        loadAPIDataFromEEPROM();
+        if (!Exception::hasException()) {
+            sendOkTestResponse(testRequest.id);
+        } else {
+            sendErrorTestResponse(testRequest.id, Exception::popException()->getMessage());
+        }
     }
 }
 #endif
+
+void setup() {
+    apiSerial->begin(9600);
+    apiSerial->setTimeout(READ_TIMEOUT);
+    api = new API();
+    readerTimer = new Clock();
+
+    loadAPIDataFromEEPROM();
+    
+    if (Exception::hasException()) {
+        sendErrorResponse(0, Exception::popException());
+        freeResponseBuffer();
+        Persister::clearEEPROM();
+    }
+}
 
 void loop() {
     if (apiSerial->available()) {
@@ -389,6 +424,12 @@ void loop() {
                 sendErrorResponse(0, "Failed to decode the request");
             } else {
                 handleAPIRequest();
+                if (!Exception::hasException()) {
+                    sendOkResponse(request.id);
+                } else {
+                    const Exception* exception = Exception::popException();
+                    sendErrorResponse(request.id, exception);
+                }
             }
         }
         #ifdef TEST

@@ -115,7 +115,7 @@ async def test_error_water_tank_is_not_filling(api_client: APIClient):
 
     await api_client.advance_clock(changing_interval)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank is not filling'
@@ -150,7 +150,7 @@ async def test_error_water_tank_has_stopped_to_filling(api_client: APIClient):
 
     await api_client.advance_clock(changing_interval)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank has stopped to fill'
@@ -235,7 +235,7 @@ async def test_interleaved_water_tanks_errors(api_client: APIClient):
 
     await api_client.advance_clock(changing_interval)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank has stopped to fill'
@@ -243,9 +243,9 @@ async def test_interleaved_water_tanks_errors(api_client: APIClient):
     
     # the error should show up each 10 seconds
     with pytest.raises(asyncio.TimeoutError):
-        response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+        response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
     
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=4)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank is not filling'
@@ -253,9 +253,9 @@ async def test_interleaved_water_tanks_errors(api_client: APIClient):
 
     # the error should show up each 10 seconds
     with pytest.raises(asyncio.TimeoutError):
-        response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+        response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
     
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=4)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank has stopped to fill'
@@ -263,9 +263,9 @@ async def test_interleaved_water_tanks_errors(api_client: APIClient):
 
     # the error should show up each 10 seconds
     with pytest.raises(asyncio.TimeoutError):
-        response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+        response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
     
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=4)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank is not filling'
@@ -297,7 +297,7 @@ async def test_auto_stop_when_water_tank_has_stopped_to_fill(api_client: APIClie
 
     await api_client.advance_clock(changing_interval)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank has stopped to fill'
@@ -305,9 +305,9 @@ async def test_auto_stop_when_water_tank_has_stopped_to_fill(api_client: APIClie
 
     # the error should show up each 10 seconds
     with pytest.raises(asyncio.TimeoutError):
-        response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+        response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=4)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank has stopped to fill'
@@ -315,7 +315,7 @@ async def test_auto_stop_when_water_tank_has_stopped_to_fill(api_client: APIClie
 
     await api_client.advance_clock(changing_interval)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'Water tank deactivated. It has stopped to fill'
@@ -323,9 +323,9 @@ async def test_auto_stop_when_water_tank_has_stopped_to_fill(api_client: APIClie
 
     # the error should show up each 10 seconds
     with pytest.raises(asyncio.TimeoutError):
-        response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+        response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
     
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=4)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'Water tank deactivated. It has stopped to fill'
@@ -362,7 +362,7 @@ async def test_auto_stop_when_water_tank_is_not_filling(api_client: APIClient):
 
     await api_client.advance_clock(changing_interval)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank is not filling'
@@ -370,9 +370,9 @@ async def test_auto_stop_when_water_tank_is_not_filling(api_client: APIClient):
 
     # the error should show up each 10 seconds
     with pytest.raises(asyncio.TimeoutError):
-        response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+        response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=4)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'The water tank is not filling'
@@ -380,7 +380,7 @@ async def test_auto_stop_when_water_tank_is_not_filling(api_client: APIClient):
 
     await api_client.advance_clock(changing_interval)
 
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=10)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'Water tank deactivated. It has stopped to fill'
@@ -388,9 +388,9 @@ async def test_auto_stop_when_water_tank_is_not_filling(api_client: APIClient):
 
     # the error should show up each 10 seconds
     with pytest.raises(asyncio.TimeoutError):
-        response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
+        response = await asyncio.wait_for(api_client.get_error_response(), timeout=5)
     
-    response = await asyncio.wait_for(api_client.get_error_response(), timeout=4)
+    response = await asyncio.wait_for(api_client.get_error_response(), timeout=7)
 
     assert response.exception_type is APIRuntimeError
     assert response.message == 'Water tank deactivated. It has stopped to fill'

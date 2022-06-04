@@ -87,4 +87,9 @@ const Exception PIN_NOT_FOUND = Exception("Pin is not defined in an IOInterface 
 
 const Exception RESOURCE_NAME_EMPTY = Exception("Cannot create a resource with an empty name", INVALID_REQUEST);
 
+const Exception SAVE_CORRUPTED = Exception("API data is corrupted. The API has been reset!", GENERIC_ERROR);
+
+const Exception FAILED_TO_SAVE = Exception(
+    "Failed to save the data. The resources may not be available after resetting", GENERIC_ERROR);
+
 #endif

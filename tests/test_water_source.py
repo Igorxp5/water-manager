@@ -8,7 +8,7 @@ from .lib.api.models import OperationMode
 from .lib.api.exceptions import APIException, APIInvalidRequest
 
 LOGGER = logging.getLogger(__name__)
-
+MAX_WATER_SOURCES = 5
 
 async def test_create_water_source(api_client: APIClient):
     """Platform should be able to create a water source and get the list of created water sources"""
@@ -20,8 +20,8 @@ async def test_create_water_source(api_client: APIClient):
 
 
 async def test_max_water_sources(api_client: APIClient):
-    """Platform should not allow to create more than 10 water sources"""
-    expected_water_sources = [(f'Water source {i}', i) for i in range(1, 11)]
+    """Platform should not allow to create more than 5 water sources"""
+    expected_water_sources = [(f'Water source {i}', i) for i in range(1, MAX_WATER_SOURCES + 1)]
 
     for name, pin in expected_water_sources:
         free_memory = await api_client.get_free_memory()

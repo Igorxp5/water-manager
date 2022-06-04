@@ -33,6 +33,10 @@ typedef struct __TestGetMillis {
     char dummy_field;
 } _TestGetMillis;
 
+typedef struct __TestLoadAPIFromEEPROM { 
+    char dummy_field;
+} _TestLoadAPIFromEEPROM;
+
 typedef struct __TestResetClock { 
     char dummy_field;
 } _TestResetClock;
@@ -82,6 +86,7 @@ typedef struct __TestRequest {
         _TestSetClockOffset setClockOffset;
         _TestGetMillis getMillis;
         _TestSetIOSource setIOSource;
+        _TestLoadAPIFromEEPROM loadAPIFromEEPROM;
         _TestResetClock resetClock;
     } message; 
 } _TestRequest;
@@ -120,6 +125,7 @@ extern "C" {
 #define _TestSetClockOffset_init_default         {0}
 #define _TestGetMillis_init_default              {0}
 #define _TestSetIOSource_init_default            {__TestSetIOSource_IOSource_MIN}
+#define _TestLoadAPIFromEEPROM_init_default      {0}
 #define _TestResetClock_init_default             {0}
 #define _TestRequest_init_zero                   {0, 0, {_TestCreateIO_init_zero}}
 #define _TestResponseValue_init_zero             {0, {0}}
@@ -132,6 +138,7 @@ extern "C" {
 #define _TestSetClockOffset_init_zero            {0}
 #define _TestGetMillis_init_zero                 {0}
 #define _TestSetIOSource_init_zero               {__TestSetIOSource_IOSource_MIN}
+#define _TestLoadAPIFromEEPROM_init_zero         {0}
 #define _TestResetClock_init_zero                {0}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -156,7 +163,8 @@ extern "C" {
 #define _TestRequest_setClockOffset_tag          7
 #define _TestRequest_getMillis_tag               8
 #define _TestRequest_setIOSource_tag             9
-#define _TestRequest_resetClock_tag              10
+#define _TestRequest_loadAPIFromEEPROM_tag       10
+#define _TestRequest_resetClock_tag              11
 #define _TestResponse_id_tag                     1
 #define _TestResponse_message_tag                2
 #define _TestResponse_error_tag                  3
@@ -172,7 +180,8 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (message,freeMemory,message.freeMemory),   6)
 X(a, STATIC,   ONEOF,    MESSAGE,  (message,setClockOffset,message.setClockOffset),   7) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (message,getMillis,message.getMillis),   8) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (message,setIOSource,message.setIOSource),   9) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (message,resetClock,message.resetClock),  10)
+X(a, STATIC,   ONEOF,    MESSAGE,  (message,loadAPIFromEEPROM,message.loadAPIFromEEPROM),  10) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (message,resetClock,message.resetClock),  11)
 #define _TestRequest_CALLBACK NULL
 #define _TestRequest_DEFAULT NULL
 #define _TestRequest_message_createIO_MSGTYPE _TestCreateIO
@@ -183,6 +192,7 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (message,resetClock,message.resetClock),  10)
 #define _TestRequest_message_setClockOffset_MSGTYPE _TestSetClockOffset
 #define _TestRequest_message_getMillis_MSGTYPE _TestGetMillis
 #define _TestRequest_message_setIOSource_MSGTYPE _TestSetIOSource
+#define _TestRequest_message_loadAPIFromEEPROM_MSGTYPE _TestLoadAPIFromEEPROM
 #define _TestRequest_message_resetClock_MSGTYPE _TestResetClock
 
 #define _TestResponseValue_FIELDLIST(X, a) \
@@ -244,6 +254,11 @@ X(a, STATIC,   SINGULAR, UENUM,    source,            1)
 #define _TestSetIOSource_CALLBACK NULL
 #define _TestSetIOSource_DEFAULT NULL
 
+#define _TestLoadAPIFromEEPROM_FIELDLIST(X, a) \
+
+#define _TestLoadAPIFromEEPROM_CALLBACK NULL
+#define _TestLoadAPIFromEEPROM_DEFAULT NULL
+
 #define _TestResetClock_FIELDLIST(X, a) \
 
 #define _TestResetClock_CALLBACK NULL
@@ -260,6 +275,7 @@ extern const pb_msgdesc_t _TestFreeMemory_msg;
 extern const pb_msgdesc_t _TestSetClockOffset_msg;
 extern const pb_msgdesc_t _TestGetMillis_msg;
 extern const pb_msgdesc_t _TestSetIOSource_msg;
+extern const pb_msgdesc_t _TestLoadAPIFromEEPROM_msg;
 extern const pb_msgdesc_t _TestResetClock_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -274,6 +290,7 @@ extern const pb_msgdesc_t _TestResetClock_msg;
 #define _TestSetClockOffset_fields &_TestSetClockOffset_msg
 #define _TestGetMillis_fields &_TestGetMillis_msg
 #define _TestSetIOSource_fields &_TestSetIOSource_msg
+#define _TestLoadAPIFromEEPROM_fields &_TestLoadAPIFromEEPROM_msg
 #define _TestResetClock_fields &_TestResetClock_msg
 
 /* Maximum encoded size of messages (where known) */
@@ -282,6 +299,7 @@ extern const pb_msgdesc_t _TestResetClock_msg;
 #define _TestFreeMemory_size                     0
 #define _TestGetIOValue_size                     6
 #define _TestGetMillis_size                      0
+#define _TestLoadAPIFromEEPROM_size              0
 #define _TestRequest_size                        20
 #define _TestResetClock_size                     0
 #define _TestResponseValue_size                  101

@@ -14,8 +14,8 @@ class API
 
         void createWaterSource(char* name, short pin);
         void createWaterSource(char* name, short pin, char* waterTankName);
-        void createWaterTank(char* name, short volumeReaderPin, float volumeFactor, float pressureFactor);
-        void createWaterTank(char* name, short volumeReaderPin, float volumeFactor, float pressureFactor, char* waterSourceName);
+        void createWaterTank(char* name, short volumeReaderPin, float volumeFactor, float pressureFactor, float pressureChangingValue);
+        void createWaterTank(char* name, short volumeReaderPin, float volumeFactor, float pressureFactor, float pressureChangingValue, char* waterSourceName);
         void setWaterTankMinimumVolume(char* name, float minimum);
         void setWaterTankMaxVolume(char* name, float max);
         void setWaterZeroVolume(char* name, float pressure);

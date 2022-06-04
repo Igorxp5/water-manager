@@ -35,6 +35,7 @@ API_METHODS = {
     'Set Water Tank Active': 'set_water_tank_active',
     'Set Operation Mode': 'set_operation_mode',
     'Get Operation Mode': 'get_operation_mode',
+    'Save': 'save',
     'Reset': 'reset',
     'Create IO': 'create_io',
     'Set IO Value': 'set_io_value',

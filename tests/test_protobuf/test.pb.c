@@ -39,6 +39,9 @@ PB_BIND(_TestGetMillis, _TestGetMillis, AUTO)
 PB_BIND(_TestSetIOSource, _TestSetIOSource, AUTO)
 
 
+PB_BIND(_TestLoadAPIFromEEPROM, _TestLoadAPIFromEEPROM, AUTO)
+
+
 PB_BIND(_TestResetClock, _TestResetClock, AUTO)
 
 

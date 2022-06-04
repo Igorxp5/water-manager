@@ -10,6 +10,7 @@ from .lib.api.exceptions import APIException, APIInvalidRequest
 
 LOGGER = logging.getLogger(__name__)
 FLOAT_ERROR_TOLERANCE = 0.03  # 3%
+MAX_WATER_TANKS = 5
 
 
 async def test_create_water_tank(api_client: APIClient):
@@ -40,9 +41,9 @@ async def test_create_water_tank_with_water_source(api_client: APIClient):
 
 
 async def test_max_water_tanks(api_client: APIClient):
-    """Platform should not allow to create more than 10 water tanks"""
+    """Platform should not allow to create more than 5 water tanks"""
     volume_factor, pressure_factor = 1.5, 2.5
-    expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, 11)]
+    expected_water_tanks = [(f'Water tank {i}', i) for i in range(1, MAX_WATER_TANKS + 1)]
 
     for name, pressure_sensor in expected_water_tanks:
         free_memory = await api_client.get_free_memory()

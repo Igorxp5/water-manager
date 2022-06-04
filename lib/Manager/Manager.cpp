@@ -1,7 +1,6 @@
 #include <Arduino.h>
 
 #include "Manager.h"
-#include "Utils.h"
 
 const int ITEM_NOT_FOUND = -1;
 

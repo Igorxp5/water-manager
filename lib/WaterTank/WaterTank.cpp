@@ -2,7 +2,6 @@
 
 #include "WaterTank.h"
 #include "Exception.h"
-#include "Utils.h"
 
 WaterTank::WaterTank(IOInterface* pressureSensor, float volumeFactor, float pressureFactor, WaterSource* waterSource) {
     this->pressureSensor = pressureSensor;

@@ -93,9 +93,13 @@ class APIClient:
     def get_water_source_list(self, return_exceptions=False) -> list:
         return self.send_request('getWaterSourceList', response_type=list, return_exceptions=return_exceptions)
 
-    def create_water_tank(self, name: str, pressure_sensor_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None, return_exceptions=False):
+    def create_water_tank(self, name: str, pressure_sensor_pin: int, volume_factor: float, pressure_factor: float, water_source_name: str = None,
+                          min_volume: float=0, max_volume: float=0, zero_volume_pressure: float=0, presure_changing_value: float=0.2, 
+                          return_exceptions=False):
         return self.send_request('createWaterTank', name=name, pressureSensorPin=pressure_sensor_pin, volumeFactor=volume_factor,
-                                 pressureFactor=pressure_factor, waterSourceName=water_source_name, return_exceptions=return_exceptions)
+                                 minimumVolume=min_volume, maxVolume=max_volume, zeroVolumePressure=zero_volume_pressure, 
+                                 pressureChangingValue=presure_changing_value, pressureFactor=pressure_factor,
+                                 waterSourceName=water_source_name, return_exceptions=return_exceptions)
 
     def remove_water_tank(self, name: str, return_exceptions=False):
         return self.send_request('removeWaterTank', waterTankName=name, return_exceptions=return_exceptions)
@@ -138,6 +142,9 @@ class APIClient:
             return OperationMode(value) if value else OperationMode.MANUAL
         return self.send_request('getMode', response_type=_operation_mode_factory, return_exceptions=return_exceptions)
 
+    def save(self, return_exceptions=False):
+        return self.send_request('save', return_exceptions=return_exceptions)
+
     def reset(self, return_exceptions=False):
         return self.send_request('reset', return_exceptions=return_exceptions)
 
@@ -164,6 +171,9 @@ class APIClient:
 
     def get_free_memory(self, return_exceptions=False) -> int:
         return self.send_request('freeMemory', request_class=_TestRequest, response_type=int, return_exceptions=return_exceptions)
+
+    def load_api_from_eeprom(self, return_exceptions=False):
+        return self.send_request('loadAPIFromEEPROM', request_class=_TestRequest, return_exceptions=return_exceptions)
 
     def reset_clock(self, return_exceptions=False):
         self._clock_offset = 0
@@ -212,6 +222,7 @@ class APIClient:
                     LOGGER.warning('Got Response without mapped request!')
                     LOGGER.warning(f'Response message: {response.message}')
                 else:
+                    LOGGER.error(f'{response.message} :: {response.arg}')
                     await self._unmapped_error_responses.put(response)
 
     async def _request_timeout_routine(self, request_id, timeout):

@@ -3,7 +3,6 @@
 #include "WaterTank.h"
 #include "OperationMode.h"
 #include "IOInterface.h"
-#include "Utils.h"
 
 API::API() {
     this->manager = new Manager();
@@ -30,16 +29,17 @@ void API::createWaterSource(char* name, short pin, char* waterTankName) {
     this->manager->registerWaterSource(name, waterSource);
 }
 
-void API::createWaterTank(char* name, short pressureSensorPin, float volumeFactor, float pressureFactor) {
+void API::createWaterTank(char* name, short pressureSensorPin, float volumeFactor, float pressureFactor, float pressureChangingValue) {
     if (this->manager->isWaterTankRegistered(name)) {
         return Exception::throwException(&WATER_TANK_ALREADY_REGISTERED);
     }
     IOInterface* pressureSensor = this->getOrCreateIO(pressureSensorPin, ANALOGIC, READ_ONLY);
     WaterTank* waterTank = new WaterTank(pressureSensor, volumeFactor, pressureFactor);
+    waterTank->pressureChangingValue = pressureChangingValue;
     this->manager->registerWaterTank(name, waterTank);
 }
 
-void API::createWaterTank(char* name, short pressureSensorPin, float volumeFactor, float pressureFactor, char* waterSourceName) {
+void API::createWaterTank(char* name, short pressureSensorPin, float volumeFactor, float pressureFactor, float pressureChangingValue, char* waterSourceName) {
     if (this->manager->isWaterTankRegistered(name)) {
         return Exception::throwException(&WATER_TANK_ALREADY_REGISTERED);
     } else if (!this->manager->isWaterSourceRegistered(waterSourceName)) {
@@ -49,7 +49,7 @@ void API::createWaterTank(char* name, short pressureSensorPin, float volumeFacto
     WaterSource* waterSource = this->getWaterSource(waterSourceName);
 
     WaterTank* waterTank = new WaterTank(pressureSensor, volumeFactor, pressureFactor, waterSource);
-
+    waterTank->pressureChangingValue = pressureChangingValue;
     this->manager->registerWaterTank(name, waterTank);
 }
 

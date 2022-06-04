@@ -48,6 +48,13 @@ async def check_memory_leak(api_client: APIClient):
     await api_client.reset_clock()
 
 
+@pytest.fixture
+async def clear_eeprom(api_client: APIClient):
+    yield
+    await api_client.reset()
+    await api_client.save()
+
+
 @pytest.fixture(scope='session')
 def arduino_connection():
     yield ArduinoConnection(port=ARDUINO_PORT)

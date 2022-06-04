@@ -1,6 +1,5 @@
 #include "IOInterface.h"
 
-#include "Utils.h"
 #include "Exception.h"
 
 #include <Arduino.h>

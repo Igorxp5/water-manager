@@ -11,7 +11,8 @@ message _TestRequest {
         _TestSetClockOffset setClockOffset = 7;
         _TestGetMillis getMillis = 8;
         _TestSetIOSource setIOSource = 9;
-        _TestResetClock resetClock = 10;
+        _TestLoadAPIFromEEPROM loadAPIFromEEPROM = 10;
+        _TestResetClock resetClock = 11;
     }
 }
 
@@ -68,6 +69,10 @@ message _TestSetIOSource {
         PHYSICAL = 1;
     }
     IOSource source = 1;
+}
+
+message _TestLoadAPIFromEEPROM {
+
 }
 
 message _TestResetClock {
