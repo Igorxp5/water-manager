@@ -1,3 +1,3 @@
 [submodule "protobuf"]
 	path = protobuf
-	url = https://gitlab.com/water-manager/protobuf.git
+	url = https://github.com/water-manager/protobuf.git
